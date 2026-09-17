@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#203f32">
+  <meta name="referrer" content="no-referrer">
+  <title>開始使用 · 練習誌</title>
+  <link rel="stylesheet" href="../src/ui/theme.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--ink);font:1rem/1.75 system-ui,"Microsoft JhengHei",sans-serif}
+    main,header,footer{max-width:880px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+    a{color:var(--accent);text-underline-offset:4px;overflow-wrap:anywhere}header a{display:inline-flex;align-items:center;min-height:48px}
+    a:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:4px}h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.35;margin:0 0 20px}h2{font-size:1.35rem;line-height:1.4;margin:0 0 12px}h3{font-size:1.1rem;margin:24px 0 8px}
+    p{margin:12px 0}.intro{font-size:1.1rem}.muted{color:var(--muted)}.hero{padding:28px;background:var(--forest);color:var(--on-forest);border-radius:22px}.hero p{margin-bottom:0}
+    .roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0 36px}.role{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}.role strong,.role span{display:block}.role strong{font-size:1.1rem}.role span{color:var(--muted);font-size:.95rem}
+    section{margin:32px 0}.steps{list-style:none;counter-reset:step;padding:0}.steps>li{counter-increment:step;padding:22px;border:1px solid var(--line);border-radius:16px;background:var(--surface);margin:14px 0}.steps>li h2:before{content:counter(step);display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);width:2rem;height:2rem;margin-right:12px;border-radius:50%;font-size:1rem}
+    details{border-top:1px solid var(--line);margin-top:16px}summary{cursor:pointer;padding:14px 0;min-height:48px;font-weight:650}li{margin:10px 0}ul,ol{padding-left:24px}code{overflow-wrap:anywhere;font-size:.95em;background:var(--surface-soft);padding:2px 4px;border-radius:4px}.example{padding:14px;background:var(--surface-soft);border-radius:10px;overflow-wrap:anywhere}
+    .daily{padding:24px;border-radius:18px;background:var(--accent-soft)}.daily ol{margin-bottom:0}.status{border-left:3px solid var(--accent);padding-left:16px}footer{color:var(--muted);font-size:.9rem}
+    @media(max-width:600px){main,header,footer{padding:18px}.hero{padding:22px}.roles{grid-template-columns:1fr;gap:8px}.role{padding:12px 18px}.role strong{font-size:1rem}.steps>li{padding:18px}}
+  </style>
+</head>
+<body>
+<header><strong>練習誌 · 使用指南</strong><a href="../">回到練習誌</a></header>
+<main>
+  <div class="hero"><h1>先設定一次，之後用手機記錄。</h1><p class="intro">網頁負責記錄與看圖，Google Sheet 負責保存雲端副本。</p></div>
+  <div class="roles" aria-label="各系統的用途">
+    <div class="role"><strong>GitHub Pages</strong><span>給網頁一個固定網址</span></div>
+    <div class="role"><strong>Android Chrome</strong><span>每天記錄、看結果</span></div>
+    <div class="role"><strong>私人 Google Sheet</strong><span>同步、換機還原</span></div>
+  </div>
+  <section class="daily"><h2>設定完成後，每天只做這些</h2><ol>
+    <li>打開主畫面的「練習誌」，按「記一筆」或「沿用上次」。</li>
+    <li>填實際重量與次數。感受與備註可選填；按儲存就更新結果。</li>
+    <li>用「人體圖」看練到哪裡，用「進展」看各器材的變化。</li>
+    <li>有網路時按「同步」。需要時點「連線 Google」，確認顯示「已同步紀錄」。</li>
+  </ol></section>
+  <section><h2>第一次，照順序完成</h2>
+  <ol class="steps">
+    <li><h2>先取得正式網站網址</h2><p>把網站程式放到 GitHub Pages。完成後，手機可直接開啟 HTTPS 網址，不必讓電腦一直開著。</p>
+      <p class="example">網址範例：<code>https://你的帳號.github.io/rehab/</code><br><small>這是格式範例，不是已部署的網址。電腦的 127.0.0.1 預覽網址不能直接拿到手機使用。</small></p>
+      <details><summary>交給設定者：GitHub 要做什麼</summary><ol>
+        <li>建立 GitHub repository，例如 <code>rehab</code>。GitHub Free 可用公開 repository 架設 Pages。</li>
+        <li>放入網站程式、測試與附帶的 <code>.github/workflows/pages.yml</code>。私人備份、病史與 <code>private/</code> 不上傳。</li>
+        <li>進入 Settings → Pages，Source 選 GitHub Actions；執行部署，或推送 main 觸發。</li>
+        <li>取得部署結果的 HTTPS 網址。公開的是程式；Sheet 的共用設定維持「受限制」。</li>
+      </ol><p><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages">GitHub Pages 方案與用途</a> · <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages">部署設定</a></p></details>
+    </li>
+    <li><h2>讓 Google 認得這個網站</h2><p>在 Google Cloud 設定一次，取得一串 <strong>Client ID（用戶端 ID）</strong>。它就像網站的識別證，讓 Google 能向你確認存取權限。</p>
+      <details><summary>交給設定者：Google 要填什麼</summary><ol>
+        <li>在 <a href="https://console.cloud.google.com/">Google Cloud Console</a> 建立專案，啟用 <strong>Google Sheets API</strong> 和 <strong>Google Drive API</strong>。</li>
+        <li>設定 Google Auth Platform：填應用程式名稱與聯絡信箱；個人帳號的 Audience 選 External。Testing 階段把自己的 Google 帳號加進 Test users。</li>
+        <li>Data Access 加入 <code>https://www.googleapis.com/auth/drive.file</code>。這是 Google 建議的特定檔案權限。</li>
+        <li>建立 OAuth Client，類型選 <strong>Web application</strong>。</li>
+        <li>Authorized JavaScript origins 填 <code>https://你的帳號.github.io</code>，<strong>不要加 /rehab/</strong>。自訂網域則填該 HTTPS 網域。</li>
+        <li>複製結尾為 <code>.apps.googleusercontent.com</code> 的 Client ID。這個版本不需 API key、Client secret、Apps Script 或後端登入程式。</li>
+      </ol><p><a href="https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid">Google 用戶端設定</a> · <a href="https://developers.google.com/workspace/sheets/api/scopes">存取範圍</a></p></details>
+    </li>
+    <li><h2>在練習誌連上自己的 Sheet</h2><ol>
+      <li>Android Chrome 開正式網址 →「資料設定」。</li>
+      <li>貼上 Client ID →「儲存設定並準備授權」→「連線 Google」。</li>
+      <li>選自己的 Google 帳號並授權 →「建立私人試算表」。所需欄位會自動建立。</li>
+      <li>如已有本機紀錄：先從舊版「匯出備份」，到正式網站「匯入 JSON 備份」，再同步。舊預覽資料不會自動搬到新網址。</li>
+      <li>確認「已同步紀錄」後，可從 Chrome 選單選「加到主畫面」／「安裝」。名稱依 Chrome 版本而異。</li>
+    </ol><p class="muted">以後不必重貼 ID 或重建 Sheet。重開網頁或授權到期後，可能需要再按「連線 Google」。</p>
+      <p><a href="https://support.google.com/chrome/answer/9658361?co=GENIE.Platform%3DAndroid&amp;hl=zh-Hant">Android 安裝網頁應用程式</a></p>
+    </li>
+  </ol></section>
+  <section><h2>看懂這兩種狀態就夠了</h2>
+    <div class="status"><p><strong>已存手機 · 待同步</strong><br>資料已存在這支手機，但尚未確認雲端收到。</p><p><strong>已同步紀錄</strong><br>程式已從 Google 讀回資料並確認；這時才算同步完成。</p></div>
+    <p>網頁開著、有網路且 Google 仍連線時，儲存後會嘗試同步。關掉網頁後不保證背景同步；未同步前請保留手機網站資料。</p>
+  </section>
+  <section><h2>需要時再看</h2>
+    <details><summary>InBody、身體不適，要另外接系統嗎？</summary><p>不用。InBody 按「記錄 InBody」手動輸入，隔幾週才測也可以；日期會依實際量測間隔呈現。沒有的數值留白。</p><p>訓練中的感受填在該筆訓練內。隔天或持續不適，才使用下方收起的「不適追蹤」。目前沒有直接連 InBody 機器、照片辨識或 AI 自動解析。</p></details>
+    <details><summary>可以直接在 Google Sheet 改數字嗎？</summary><p>目前請在練習誌新增或修改。Sheet 保存的是含歷史版本的同步日誌，手動改欄位、刪列或加公式可能破壞同步格式。</p><p>「可從 Sheet 重新載入」是還原這套系統保存的資料，不是匯入任意格式的健身試算表。</p></details>
+    <details><summary>換手機，怎麼把紀錄找回來？</summary><p>先讓舊手機顯示「已同步紀錄」。新手機開同一正式網址，設定相同 Client ID、連線相同 Google 帳號，按「尋找既有試算表」→ 選原本那份 →「載入選取的試算表」。不要另建空表。</p><p>也可以在舊手機匯出 JSON 備份，在新手機匯入。未同步、又沒有備份的紀錄，不能從雲端找回。</p></details>
+    <details><summary>同步不成功，先看哪裡？</summary><ul>
+      <li>尚未連線／已到期：按同步進設定，再按「連線 Google」。</li>
+      <li>origin_mismatch：核對 Google 設定中的網站來源，不能包含路徑。</li>
+      <li>access_denied：核對 Test users、登入帳號及機構帳號限制。</li>
+      <li>找不到原本的表：確認同一 Google 帳號與同一 Cloud 專案。它不會列出所有 Drive 檔案。</li>
+      <li>格式損壞：先匯出手機備份，保留 Sheet 原檔，請設定者檢查；不要清空資料重試。</li>
+    </ul><p>Google 的瀏覽器授權需要使用者點擊；到期後重新取得權杖是此架構的操作限制。<a href="https://developers.google.com/identity/oauth2/web/guides/use-token-model">Google 授權方式</a></p></details>
+  </section>
+  <p>第一次設定用電腦較方便；設定完成後，日常記錄、查看圖表與重新連線可在 Android 上操作。</p>
+</main>
+<footer>本指南說明設定方式，不代表你的帳號已完成部署或授權。正式上線後，仍要實測一次同步、離線記錄與換機載入。</footer>
+</body>
+</html>

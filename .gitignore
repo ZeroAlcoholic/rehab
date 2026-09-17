@@ -1,0 +1,29 @@
+# Private health records, imports, screenshots and generated evidence
+/private/
+/artifacts/
+/backups/
+/exports/
+/public-site/
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+client_secret*.json
+credentials*.json
+service-account*.json
+service_account*.json
+
+# Dependencies, runtime output and editor files
+node_modules/
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
