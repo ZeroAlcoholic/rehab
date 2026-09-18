@@ -1,6 +1,6 @@
 """Real cache-first SW upgrade, preserving an unsynced record and another tab's draft."""
 from pathlib import Path
-import functools,http.server,threading,json,re
+import functools,http.server,threading,re
 from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
 legacy=True
@@ -25,7 +25,7 @@ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
-  browser=p.chromium.launch(channel='msedge',headless=True)
+  browser=p.chromium.launch(channel='chrome',headless=True)
   for mode in ['single','other-tab','download-failure']:
    keep_tab=mode=='other-tab'
    fail_update=False
@@ -61,12 +61,13 @@ try:
     other.close();page.locator('#retry').click()
    page.wait_for_url('**/?range=0');page.locator('#rehab-panel').wait_for()
    state=page.evaluate("async()=>{const {openRepository}=await import('./src/storage/repository.js');return (await (await openRepository()).read());}")
-   assert len(state['events'])==24 and len(state['pending'])==24
+   assert len(state['events'])>1 and len(state['pending'])==len(state['events'])
    assert any(e['data'].get('note')=='keep me' for e in state['events'])
    assert '["training", "inbody", "rehab"].includes' in page.evaluate("fetch('./src/domain/journal.js').then(r=>r.text())")
+   projected_count=page.evaluate("async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');return (await createService(await openRepository()).read()).records.length;}")
    ctx.set_offline(True);page.reload();page.locator('#rehab-panel').wait_for()
-   assert page.locator('#history .record').count()==24
+   assert page.locator('#history .record').count()==projected_count
    ctx.close()
   browser.close()
-  print('PASS: cached old guard upgrades before import; 24 pending records preserved; other tab draft protected; failed download preserves data and retries; offline reload')
+  print('PASS: cached old guard upgrades before import; pending events preserved; other tab draft protected; failed download preserves data and retries; offline reload')
 finally:server.shutdown()

@@ -9,7 +9,7 @@ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
-  browser=p.chromium.launch(channel='msedge',headless=True)
+  browser=p.chromium.launch(channel='chrome',headless=True)
   ctx=browser.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True)
   page=ctx.new_page();page.set_default_timeout(6000);errors=[]
   page.on('pageerror',lambda e:errors.append(str(e)))
@@ -25,6 +25,13 @@ try:
   assert records[0]['data']['pain']=='unknown' and records[0]['data']['technique']=='unknown'
   assert '1' in page.locator('.stats').inner_text()
   assert '主要 1 組' in page.locator('#body-map-detail').inner_text()
+  shortcuts=page.locator('.equipment-shortcut')
+  assert shortcuts.count()==1, 'A saved machine should become a home equipment shortcut'
+  shortcuts.first.click()
+  assert page.get_by_label('機台／場地識別').input_value()=='胸推 A'
+  assert page.get_by_label('第 1 組重量').input_value()=='30'
+  assert page.get_by_label('第 1 組次數').input_value()==''
+  page.get_by_role('button',name='關閉',exact=True).click()
   # A newer workout on another machine must not leak into the chosen result's repeat action.
   page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');const s=createService(await openRepository());await s.save('training',{date:'2026-09-16',exerciseId:'chest_press',machine:'胸推 B',unit:'lb',sets:[{load:65,reps:8}],pain:'mild',technique:'compensation',note:'只屬於 B'});await s.save('rehab',{type:'plan',date:'2026-09-16',regions:['abs'],items:[{id:'brace',exerciseId:'abdominal_bracing',name:'呼吸練習',status:'review',dose:'',cue:'',next:''}]});}""")
   page.reload();page.locator('#range').select_option('0')
@@ -65,6 +72,12 @@ try:
   assert page.locator('.rehab-alert').is_visible()
   assert not page.get_by_role('button',name='記錄不適',exact=True).is_visible()
   assert '立即就醫' in page.locator('.rehab-alert').inner_text()
+  page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');const s=createService(await openRepository());for(let i=0;i<7;i++)await s.save('training',{date:`2026-09-${String(17+i).padStart(2,'0')}`,exerciseId:'leg_extension',machine:`腿伸展 ${i}`,unit:'lb',sets:[{load:40,reps:10}],pain:'unknown',technique:'unknown',note:''});}""")
+  page.reload()
+  assert page.locator('#equipment-shortcuts > .equipment-shortcut').count()==6
+  assert page.locator('.equipment-more').count()==1
+  page.locator('.equipment-more > summary').click()
+  assert page.locator('.equipment-more .equipment-shortcut').count()>=1
   for width in [320,412,1100]:
    page.set_viewport_size({'width':width,'height':915})
    page.evaluate("document.documentElement.style.fontSize='200%'")

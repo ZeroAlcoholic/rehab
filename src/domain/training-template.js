@@ -11,3 +11,9 @@ export function repeatTraining(data, date) {
   if (data.review) result.review = {...data.review};
   return result;
 }
+
+export function startFromEquipment(data, date) {
+  const result = repeatTraining(data, date);
+  result.sets = result.sets.map((set) => ({ ...set, reps: null }));
+  return result;
+}

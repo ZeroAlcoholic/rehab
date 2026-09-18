@@ -9,7 +9,7 @@ server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
-  browser=p.chromium.launch(channel='msedge',headless=True)
+  browser=p.chromium.launch(channel='chrome',headless=True)
   ctx=browser.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True)
   page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(f'http://127.0.0.1:{server.server_port}/')
@@ -31,7 +31,7 @@ try:
   assert rgb[1]>rgb[0] and rgb[1]>rgb[2],color
   ratios=page.evaluate(r"""()=>{
    function lum(c){const a=c.match(/[\d.]+/g).slice(0,3).map(Number).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return a[0]*.2126+a[1]*.7152+a[2]*.0722;}
-   return ['#settings','#record','#reuse','#sync','.stats span','.body-view-switch button[aria-pressed=true]','.body-mode-switch button[aria-pressed=true]','.body-selection','.rehab-panel .secondary'].map(selector=>{
+   return ['#settings','#record','.equipment-shortcut','#sync','.stats span','.body-view-switch button[aria-pressed=true]','.body-mode-switch button[aria-pressed=true]','.body-selection','.rehab-panel .secondary'].map(selector=>{
     const e=document.querySelector(selector);let n=e,bg;do{bg=getComputedStyle(n).backgroundColor;n=n.parentElement;}while(bg==='rgba(0, 0, 0, 0)'&&n);
     const a=lum(getComputedStyle(e).color),b=lum(bg);return {selector,ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05)};
    });

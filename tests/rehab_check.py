@@ -11,7 +11,7 @@ threading.Thread(target=server.serve_forever,daemon=True).start()
 url=f'http://127.0.0.1:{server.server_port}/'
 try:
  with sync_playwright() as p:
-  browser=p.chromium.launch(channel='msedge',headless=True)
+  browser=p.chromium.launch(channel='chrome',headless=True)
   ctx=browser.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True)
   page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
   page.goto(url)

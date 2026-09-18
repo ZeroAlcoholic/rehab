@@ -25,13 +25,13 @@ url = f'http://127.0.0.1:{server.server_port}/rehab/'
 results=[]
 try:
     with sync_playwright() as p:
-        browser=p.chromium.launch(channel='msedge', headless=True)
+        browser=p.chromium.launch(channel='chrome',headless=True)
         context=browser.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True,device_scale_factor=2)
         page=context.new_page()
         errors=[]
         page.on('pageerror', lambda e: (errors.append(str(e)), print('BROWSER ERROR:',str(e),flush=True)))
         page.goto(url)
-        page.get_by_role('button',name='記一筆',exact=True).click()
+        page.get_by_role('button',name='其他器材',exact=True).click()
         page.get_by_role('combobox',name='動作',exact=True).select_option('chest_press')
         page.get_by_label('機台／場地識別').fill('健身房 A 胸推')
         page.get_by_role('combobox',name='單位',exact=True).select_option('lb')
@@ -51,12 +51,13 @@ try:
         page.locator('dialog[open]').wait_for(state='hidden')
         results.append('training create/reload/edit persists in real IndexedDB')
 
-        page.get_by_role('button',name='沿用上次',exact=True).click()
-        assert page.get_by_label('第 1 組次數').input_value()=='11'
+        page.locator('.equipment-shortcut').filter(has_text='健身房 A 胸推').click()
+        assert page.get_by_label('第 1 組次數').input_value()==''
+        page.get_by_label('第 1 組次數').fill('11')
         page.get_by_role('button',name='儲存紀錄',exact=True).click()
         page.locator('dialog[open]').wait_for(state='hidden')
         assert page.locator('#history').get_by_role('button',name='修改',exact=True).count()==2
-        results.append('reuse creates another record instead of editing source')
+        results.append('equipment shortcut creates another record with actual reps required')
 
         page.get_by_role('button',name='記錄 InBody',exact=True).click()
         page.get_by_label('體重（kg）',exact=True).fill('70.5')
@@ -86,7 +87,7 @@ try:
         page.wait_for_function('navigator.serviceWorker.controller !== null')
         context.set_offline(True)
         page.reload()
-        page.get_by_role('button',name='記一筆',exact=True).click()
+        page.get_by_role('button',name='其他器材',exact=True).click()
         page.get_by_label('機台／場地識別').fill('離線 A')
         page.get_by_label('第 1 組重量').fill('20')
         page.get_by_label('第 1 組次數').fill('10')
@@ -249,7 +250,7 @@ try:
         results.append('simultaneous IndexedDB connections preserve both committed writes')
         page.evaluate("document.documentElement.style.fontSize='200%'")
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
-        page.get_by_role('button',name='記一筆',exact=True).click()
+        page.get_by_role('button',name='其他器材',exact=True).click()
         assert page.locator('dialog').evaluate('(d)=>d.scrollWidth <= d.clientWidth')
         page.screenshot(path=str(OUT/'android-large-text.png'))
         page.get_by_role('button',name='關閉',exact=True).click()

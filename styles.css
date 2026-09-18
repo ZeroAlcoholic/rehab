@@ -217,9 +217,85 @@ main {
   border-radius: 50%;
   margin-right: 8px;
 }
+.quick-entry-heading {
+  margin-top: 16px;
+}
+.quick-entry-heading h2 {
+  margin: 0;
+  color: var(--surface);
+  font-size: 1.25rem;
+}
+.quick-entry-heading p {
+  margin: 4px 0 12px;
+  color: var(--inverse-muted);
+  font-size: var(--text-small);
+}
+.equipment-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+}
+.equipment-shortcut {
+  display: flex;
+  min-width: 0;
+  min-height: 120px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 14px;
+  text-align: left;
+  color: var(--ink);
+  background: var(--surface);
+  border-color: transparent;
+}
+.equipment-shortcut:hover {
+  background: var(--accent-soft);
+}
+.equipment-shortcut strong,
+.equipment-shortcut span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.equipment-shortcut .equipment-name {
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+.equipment-shortcut .equipment-last {
+  margin-top: auto;
+  font-size: var(--text-small);
+  font-weight: 650;
+}
+.equipment-shortcut small {
+  color: var(--muted);
+}
+.equipment-more {
+  grid-column: 1 / -1;
+  color: var(--surface);
+}
+.equipment-more > summary {
+  min-height: 48px;
+  padding: 12px 4px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.equipment-more-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+  padding-top: 4px;
+}
+.equipment-empty {
+  margin: 0;
+  padding: 14px;
+  color: var(--inverse-muted);
+  background: var(--forest-soft);
+  border: 1px solid var(--forest-line);
+  border-radius: 12px;
+}
 .entry-actions {
   display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin: 16px 0;
 }
@@ -622,6 +698,10 @@ li {
   margin: 8px 0;
 }
 @media (max-width: 700px) {
+  .equipment-shortcuts,
+  .equipment-more-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+  }
   .masthead {
     padding: 20px 16px;
   }
@@ -641,7 +721,7 @@ li {
     gap: 8px;
   }
   .entry-actions .primary {
-    grid-column: 1/-1;
+    grid-column: auto;
   }
   .section-title {
     gap: 8px;
@@ -713,6 +793,8 @@ li {
   }
 }
 @media (max-width: 350px) {
+  .equipment-shortcuts,
+  .entry-actions,
   .body-grid,
   .form-grid {
     grid-template-columns: 1fr;

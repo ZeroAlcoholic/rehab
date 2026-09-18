@@ -11,7 +11,7 @@ import {
   numberInput,
 } from "./dom.js";
 
-export function openTraining({ data = null, editing = false, repeating = false, onSave }) {
+export function openTraining({ data = null, editing = false, repeating = false, quick = false, onSave }) {
   const view = modal(editing ? "修改訓練" : "記一筆訓練"),
     form = el("form");
   const quality = qualityEditor("training", data ?? {});
@@ -147,7 +147,7 @@ export function openTraining({ data = null, editing = false, repeating = false, 
   });
   drawSets();
   form.append(
-    ...(repeating ? [el("p", {class:"muted"}, "已帶入上次數值，請改成這次實際完成的組數與次數。")] : []),
+    ...(repeating ? [el("p", {class:"muted"}, quick ? "已帶入器材、重量與組數；請填本次實際次數。" : "已帶入上次數值，請改成這次實際完成的組數與次數。")] : []),
     el(
       "div",
       { class: "form-grid" },

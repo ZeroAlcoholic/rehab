@@ -6,8 +6,8 @@
 
 | 證據 | 結果 | 支持的結論 |
 |---|---|---|
-| `node --test tests/*.test.mjs` | 89 / 89 通過 | 資料驗證、版本圖、分析、備份、同步協調、肌群角色、持續記錄、InBody、動作計畫與 Sheet 擴充符合已列案例 |
-| `node scripts/check-boundaries.mjs` | 40 個模組通過依賴檢查 | domain/storage/sync/UI 沒有越過設定的模組邊界 |
+| `node --test tests/*.test.mjs` | 91 / 91 通過 | 資料驗證、版本圖、分析、備份、同步協調、肌群角色、持續記錄、InBody、動作計畫與 Sheet 擴充符合已列案例 |
+| `node scripts/check-boundaries.mjs` | 42 個模組通過依賴檢查 | domain/storage/sync/UI 沒有越過設定的模組邊界 |
 | `tests/browser_check.py` | 14 段流程通過 | 真正 Chromium、IndexedDB、service worker 和頁面互動可完成下列流程；Google HTTP 受控 |
 | `tests/body_map_check.py` | 通過 | 三種圖層、單筆紀錄主協同上色、器材篩選、兩筆進步來源、空狀態、正背面、鍵盤、骨架、日期範圍、動作展開、320px／412px／200% 與離線切換 |
 | `tests/atlas_ux_check.py` | 通過 | 焦點／展開保留、圖與進程一致、候選不受器材篩選影響、文字清單、明細跳轉、320/412px 於 200%、離線 |
@@ -25,10 +25,10 @@ Node 測試不是單纯檢查函式存在，涵蓋：
 
 ## 真正瀏覽器流程
 
-使用 Windows Microsoft Edge Chromium 的獨立設定檔，412 × 915 viewport、觸控／mobile 模式；本機 HTTP 以 `/rehab/` 子路徑測試 GitHub project Pages 路徑。
+使用 Google Chrome 的獨立設定檔，412 × 915 viewport、觸控／mobile 模式；本機 HTTP 以 `/rehab/` 子路徑測試 GitHub project Pages 路徑。
 
 1. 新增訓練，重載後修改，確認真正 IndexedDB 保存。
-2. 沿用上次產生新紀錄，不修改原始紀錄。
+2. 點器材卡會保留同器材設定、清空次數並產生新紀錄，不修改原始紀錄。
 3. InBody 只填體重，其他測量仍為缺漏。
 4. 透過頁面下載備份並再次匯入，版本不重複。
 5. service worker 控制頁面後，斷網重載、新增、再重載仍可讀取。
@@ -151,3 +151,9 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 2026-09-17：正式部署在 HTML 公開設定中提供 OAuth Client ID。設定視窗以裝置既有值優先，沒有既有值時使用部署預設並自動準備授權；access token 仍只存在記憶體。新裝置只需按「連線 Google」，換機指南不再要求重貼 Client ID。Service Worker 新增設定模組並提升 shell 版本，避免離線更新混用舊模組。
 
 先以新瀏覽器設定欄為空重現失敗，再驗證預設值存在、受控 Google 建表／同步／讀回成功，以及重新載入後保留裝置自行儲存的 Client ID。`tests/browser_check.py`、`tests/shell_upgrade_check.py`、`tests/onboarding_check.py`、89 項 Node 測試與 40 模組邊界檢查通過。GitHub Pages 已部署；真實 Google 帳號授權與 Android Chrome 操作仍需使用者端驗收。
+
+## 依器材快速記錄（v15）
+
+2026-09-18：首頁直接從既有訓練投影器材入口，不新增另一份需維護的常用清單。最近使用的 6 台先顯示，其餘收在「其他已記錄器材」；同日依動作目錄與機台名稱固定排序。點卡片會帶入動作、機台、單位、各組重量與組數，並清空本次次數、疼痛、動作狀況及備註，避免把上次結果當成這次紀錄。首次使用的器材從「其他器材」建立。
+
+新增 2 項 domain 測試驗證同器材只取最新紀錄、排除待核對資料、最近優先與同日穩定排序。training_flow 另以 Chrome、IndexedDB 和 7 台器材驗證首層只顯示 6 台、其餘可展開、點卡後次數為空白，以及 320/412/1100px、200% 字體無橫向溢出。完整驗證結果以本節提交前最後一次執行為準；Android 實機操作仍需使用者端驗收。

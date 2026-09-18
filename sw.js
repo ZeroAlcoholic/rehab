@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v14-google-default";
+const VERSION = "rehab-shell-v15-equipment-entry";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
@@ -25,6 +25,7 @@ const files = [
   "./src/domain/body-insights.js",
   "./src/domain/comparison.js",
   "./src/domain/training-streams.js",
+  "./src/domain/equipment-shortcuts.js",
   "./src/storage/state.js",
   "./src/storage/repository.js",
   "./src/app/service.js",
@@ -53,6 +54,7 @@ const files = [
   "./src/ui/body-geometry.js",
   "./src/ui/body-map.css",
   "./src/ui/settings.js",
+  "./src/ui/equipment-shortcuts.js",
 ];
 self.addEventListener('message', event => {
   const port = event.ports[0];

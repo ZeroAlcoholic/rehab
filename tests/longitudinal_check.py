@@ -18,7 +18,7 @@ url = f'http://127.0.0.1:{server.server_port}/'
 results = []
 try:
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel='msedge', headless=True)
+        browser = p.chromium.launch(channel='chrome',headless=True)
         context = browser.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True,timezone_id='Asia/Taipei')
         page = context.new_page()
         errors = []
@@ -38,12 +38,16 @@ try:
         page.get_by_label('備註',exact=True).fill('只屬於上次的觀察')
         page.get_by_role('button',name='儲存紀錄',exact=True).click()
         page.locator('dialog[open]').wait_for(state='hidden')
-        page.locator('#reuse').click()
+        page.locator('.equipment-shortcut').filter(has_text='A 館胸推 02').click()
         page.get_by_text('感受與備註（選填）',exact=True).click()
         assert page.get_by_role('combobox',name='疼痛',exact=True).input_value() == 'unknown'
         assert page.get_by_role('combobox',name='動作狀況',exact=True).input_value() == 'unknown'
         assert page.get_by_label('備註',exact=True).input_value() == ''
         assert page.get_by_label('第 2 組重量').input_value() == '60'
+        assert page.get_by_label('第 1 組次數').input_value() == ''
+        assert page.get_by_label('第 2 組次數').input_value() == ''
+        page.get_by_label('第 1 組次數').fill('12')
+        page.get_by_label('第 2 組次數').fill('9')
         page.get_by_label('時間（台灣時間，選填）',exact=True).fill('21:10')
         page.get_by_role('button',name='儲存紀錄',exact=True).click()
         page.locator('dialog[open]').wait_for(state='hidden')

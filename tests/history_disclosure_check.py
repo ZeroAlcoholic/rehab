@@ -9,7 +9,7 @@ server = http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handl
 threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
     with sync_playwright() as p:
-        browser=p.chromium.launch(channel='msedge',headless=True)
+        browser=p.chromium.launch(channel='chrome',headless=True)
         page=browser.new_page(viewport={'width':412,'height':915})
         errors=[]
         page.on('pageerror',lambda e:errors.append(str(e)))

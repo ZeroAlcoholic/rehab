@@ -10,8 +10,9 @@ import { openInbody } from "./ui/inbody.js";
 import { renderDashboard } from "./ui/dashboard.js";
 import { renderHistory } from "./ui/history.js";
 import { openSettings } from "./ui/settings.js";
+import { renderEquipmentShortcuts } from "./ui/equipment-shortcuts.js";
 import { localDate } from "./ui/dom.js";
-import { repeatTraining } from "./domain/training-template.js";
+import { repeatTraining, startFromEquipment } from "./domain/training-template.js";
 import {openSymptom,openRehabPlan} from './ui/rehab-form.js';
 
 const initialRange = new URL(location.href).searchParams.get("range");
@@ -50,8 +51,18 @@ try {
           ? `已同步紀錄${auth.isConnected() ? "" : " · Google 待連線"}`
           : "僅存手機 · 尚未設定雲端";
     if (!navigator.onLine) status.textContent += " · 離線";
-    document.querySelector("#reuse").disabled = !state.records.some(
-      (r) => r.kind === "training" && !r.data.analysisExcludedReason,
+    renderEquipmentShortcuts(
+      document.querySelector("#equipment-shortcuts"),
+      state.records,
+      {
+        onSelect: (record) =>
+          openTraining({
+            data: startFromEquipment(record.data, localDate()),
+            repeating: true,
+            quick: true,
+            onSave: (data) => save("training", data),
+          }),
+      },
     );
     const days = Number(document.querySelector("#range").value),
       to = localDate(),
@@ -168,10 +179,6 @@ try {
     .addEventListener("click", () =>
       openTraining({ onSave: (data) => save("training", data) }),
     );
-  document.querySelector("#reuse").addEventListener("click", () => {
-    const last = state.records.filter((r) => r.kind === "training" && !r.data.analysisExcludedReason).at(-1);
-    if (last) repeat(last);
-  });
   document
     .querySelector("#inbody")
     .addEventListener("click", () =>
