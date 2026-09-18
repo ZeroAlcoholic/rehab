@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v13-readable";
+const VERSION = "rehab-shell-v14-google-default";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
@@ -29,6 +29,7 @@ const files = [
   "./src/storage/repository.js",
   "./src/app/service.js",
   "./src/google/auth.js",
+  "./src/google/config.js",
   "./src/google/sheets.js",
   "./src/google/rehab-sheet.js",
   "./src/sync/engine.js",

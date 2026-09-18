@@ -2,6 +2,7 @@ import { el, button, field, modal } from "./dom.js";
 
 export function openSettings({
   settings,
+  defaultClientId = "",
   connected,
   onPrepare,
   onConnect,
@@ -14,9 +15,10 @@ export function openSettings({
 }) {
   const view = modal("資料設定");
   let bound = Boolean(settings.sheetId);
+  const effectiveClientId = settings.clientId || defaultClientId;
   const clientId = el("input", {
     type: "text",
-    value: settings.clientId,
+    value: effectiveClientId,
     autocomplete: "off",
     spellcheck: "false",
     placeholder: "…apps.googleusercontent.com",
@@ -189,9 +191,9 @@ export function openSettings({
     download,
     field("匯入 JSON 備份", upload),
   );
-  if (settings.clientId)
+  if (effectiveClientId)
     run(prepare, async () => {
-      await onPrepare(settings.clientId);
+      await onPrepare(effectiveClientId);
       connect.disabled = false;
     }).catch(() => {});
 }

@@ -53,12 +53,12 @@
         <li>Data Access 加入 <code>https://www.googleapis.com/auth/drive.file</code>。這是 Google 建議的特定檔案權限。</li>
         <li>建立 OAuth Client，類型選 <strong>Web application</strong>。</li>
         <li>Authorized JavaScript origins 填 <code>https://你的帳號.github.io</code>，<strong>不要加 /rehab/</strong>。自訂網域則填該 HTTPS 網域。</li>
-        <li>複製結尾為 <code>.apps.googleusercontent.com</code> 的 Client ID。這個版本不需 API key、Client secret、Apps Script 或後端登入程式。</li>
+        <li>網站設定者把結尾為 <code>.apps.googleusercontent.com</code> 的 Client ID 寫入公開網站設定一次。之後新手機不必重貼。這個版本不需 API key、Client secret、Apps Script 或後端登入程式。</li>
       </ol><p><a href="https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid">Google 用戶端設定</a> · <a href="https://developers.google.com/workspace/sheets/api/scopes">存取範圍</a></p></details>
     </li>
     <li><h2>在練習誌連上自己的 Sheet</h2><ol>
       <li>Android Chrome 開正式網址 →「資料設定」。</li>
-      <li>貼上 Client ID →「儲存設定並準備授權」→「連線 Google」。</li>
+      <li>開啟「資料設定」，等待網站準備授權後按「連線 Google」。</li>
       <li>選自己的 Google 帳號並授權 →「建立私人試算表」。所需欄位會自動建立。</li>
       <li>如已有本機紀錄：先從舊版「匯出備份」，到正式網站「匯入 JSON 備份」，再同步。舊預覽資料不會自動搬到新網址。</li>
       <li>確認「已同步紀錄」後，可從 Chrome 選單選「加到主畫面」／「安裝」。名稱依 Chrome 版本而異。</li>
@@ -73,7 +73,7 @@
   <section><h2>需要時再看</h2>
     <details><summary>InBody、身體不適，要另外接系統嗎？</summary><p>不用。InBody 按「記錄 InBody」手動輸入，隔幾週才測也可以；日期會依實際量測間隔呈現。沒有的數值留白。</p><p>訓練中的感受填在該筆訓練內。隔天或持續不適，才使用下方收起的「不適追蹤」。目前沒有直接連 InBody 機器、照片辨識或 AI 自動解析。</p></details>
     <details><summary>可以直接在 Google Sheet 改數字嗎？</summary><p>目前請在練習誌新增或修改。Sheet 保存的是含歷史版本的同步日誌，手動改欄位、刪列或加公式可能破壞同步格式。</p><p>「可從 Sheet 重新載入」是還原這套系統保存的資料，不是匯入任意格式的健身試算表。</p></details>
-    <details><summary>換手機，怎麼把紀錄找回來？</summary><p>先讓舊手機顯示「已同步紀錄」。新手機開同一正式網址，設定相同 Client ID、連線相同 Google 帳號，按「尋找既有試算表」→ 選原本那份 →「載入選取的試算表」。不要另建空表。</p><p>也可以在舊手機匯出 JSON 備份，在新手機匯入。未同步、又沒有備份的紀錄，不能從雲端找回。</p></details>
+    <details><summary>換手機，怎麼把紀錄找回來？</summary><p>先讓舊手機顯示「已同步紀錄」。新手機開同一正式網址、連線相同 Google 帳號，按「尋找既有試算表」→ 選原本那份 →「載入選取的試算表」。不要另建空表。</p><p>也可以在舊手機匯出 JSON 備份，在新手機匯入。未同步、又沒有備份的紀錄，不能從雲端找回。</p></details>
     <details><summary>同步不成功，先看哪裡？</summary><ul>
       <li>尚未連線／已到期：按同步進設定，再按「連線 Google」。</li>
       <li>origin_mismatch：核對 Google 設定中的網站來源，不能包含路徑。</li>

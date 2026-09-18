@@ -153,7 +153,9 @@ try:
             ctx.route('https://www.googleapis.com/drive/**',google_route)
         def authorize(tab):
             tab.get_by_role('button',name='資料設定',exact=True).click()
-            tab.get_by_label('Google 用戶端 ID',exact=True).fill('test-client.apps.googleusercontent.com')
+            client_id = tab.get_by_label('Google 用戶端 ID',exact=True)
+            assert client_id.input_value().endswith('.apps.googleusercontent.com')
+            client_id.fill('test-client.apps.googleusercontent.com')
             tab.get_by_role('button',name='儲存設定並準備授權',exact=True).click()
             tab.get_by_role('button',name='連線 Google',exact=True).click()
             tab.get_by_text('Google 已連線',exact=True).wait_for()

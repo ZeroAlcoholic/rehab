@@ -1,6 +1,7 @@
 import { openRepository } from "./storage/repository.js";
 import { createService } from "./app/service.js";
 import { createAuth } from "./google/auth.js";
+import { readDefaultClientId } from "./google/config.js";
 import { createSheets } from "./google/sheets.js";
 import { createSyncEngine } from "./sync/engine.js";
 import { analyze } from "./domain/analytics.js";
@@ -191,6 +192,7 @@ try {
   document.querySelector("#settings").addEventListener("click", () =>
     openSettings({
       settings: state.settings,
+      defaultClientId: readDefaultClientId(),
       connected: auth.isConnected(),
       onPrepare: async (id) => {
         await service.setClientId(id);

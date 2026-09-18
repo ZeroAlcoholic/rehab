@@ -1,14 +1,14 @@
 # 驗證紀錄
 
-日期：2026-09-16。範圍：第一版程式、本機瀏覽器行為與受控的 Google 邊界。
+日期：2026-09-17。範圍：第一版程式、本機瀏覽器行為、受控的 Google 邊界與 GitHub Pages 部署。
 
 ## 已驗證
 
 | 證據 | 結果 | 支持的結論 |
 |---|---|---|
 | `node --test tests/*.test.mjs` | 89 / 89 通過 | 資料驗證、版本圖、分析、備份、同步協調、肌群角色、持續記錄、InBody、動作計畫與 Sheet 擴充符合已列案例 |
-| `node scripts/check-boundaries.mjs` | 39 個模組通過依賴檢查 | domain/storage/sync/UI 沒有越過設定的模組邊界 |
-| `tests/browser_check.py` | 13 段流程通過 | 真正 Chromium、IndexedDB、service worker 和頁面互動可完成下列流程；Google HTTP 受控 |
+| `node scripts/check-boundaries.mjs` | 40 個模組通過依賴檢查 | domain/storage/sync/UI 沒有越過設定的模組邊界 |
+| `tests/browser_check.py` | 14 段流程通過 | 真正 Chromium、IndexedDB、service worker 和頁面互動可完成下列流程；Google HTTP 受控 |
 | `tests/body_map_check.py` | 通過 | 三種圖層、單筆紀錄主協同上色、器材篩選、兩筆進步來源、空狀態、正背面、鍵盤、骨架、日期範圍、動作展開、320px／412px／200% 與離線切換 |
 | `tests/atlas_ux_check.py` | 通過 | 焦點／展開保留、圖與進程一致、候選不受器材篩選影響、文字清單、明細跳轉、320/412px 於 200%、離線 |
 | 私人起始資料流程 | 通過 | 正式備份合併、重複載入去重、待核對值隔離、來源保留、修改／匯出與離線讀回；私人測試資料不發布 |
@@ -145,3 +145,9 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 一次性 typography_probe 使用私人起始資料量測、截圖並檢查 320/412/1440/1920px 的頁面與表單、100%/200% 文字；結果保留 artifacts/typography-before.json 與 typography-after.json，私人截圖 type-after-1440-home.png / type-after-412-home.png 等。forest_ux、atlas_ux、training_flow、rehab、shell_upgrade 回歸通過。驗證曾重現 320px/200% 導覽高度 135px、大於原跳轉間距 130.4px，已提高共用間距，原可見性斷言通過；未放寬測試。
 
 已視覺檢查桌面總覽及 InBody 文字／日期排版。手機仍為瀏覽器尺寸模擬，非 Android 實機閱讀舒適度驗收。
+
+## 新裝置 Google 預設設定（v14）
+
+2026-09-17：正式部署在 HTML 公開設定中提供 OAuth Client ID。設定視窗以裝置既有值優先，沒有既有值時使用部署預設並自動準備授權；access token 仍只存在記憶體。新裝置只需按「連線 Google」，換機指南不再要求重貼 Client ID。Service Worker 新增設定模組並提升 shell 版本，避免離線更新混用舊模組。
+
+先以新瀏覽器設定欄為空重現失敗，再驗證預設值存在、受控 Google 建表／同步／讀回成功，以及重新載入後保留裝置自行儲存的 Client ID。`tests/browser_check.py`、`tests/shell_upgrade_check.py`、`tests/onboarding_check.py`、89 項 Node 測試與 40 模組邊界檢查通過。GitHub Pages 已部署；真實 Google 帳號授權與 Android Chrome 操作仍需使用者端驗收。
