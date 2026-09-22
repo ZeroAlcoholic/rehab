@@ -648,8 +648,8 @@ dialog .dialog-header {
 .dialog-body {
   padding: 20px;
 }
-.dialog-body > button,
-.dialog-body > select {
+.dialog-body > button:not([hidden]),
+.dialog-body > select:not([hidden]) {
   display: block;
   width: 100%;
   margin: 10px 0;

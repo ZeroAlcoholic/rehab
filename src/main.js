@@ -245,7 +245,17 @@ try {
       onImport: async (text) => {
         await service.importBackup(text);
         await changed();
+        const result = {recordCount:state.records.length,conflictCount:state.conflicts.length,pendingCount:state.pending.length,bound:Boolean(state.settings.sheetId)};
         void autoSync();
+        return result;
+      },
+      onViewRecords: () => {
+        const history = document.querySelector('#history');
+        const archive = history.querySelector('.history-archive');
+        if (archive) archive.open = true;
+        history.tabIndex = -1;
+        history.focus();
+        history.scrollIntoView({block:'start'});
       },
     }),
   );

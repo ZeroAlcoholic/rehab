@@ -47,7 +47,8 @@ try:
                 assert other.get_by_label('機台／場地識別').input_value()=='unsaved draft'
                 other.close();page.locator('#retry').click()
             expect(page.locator('#open-app')).to_be_visible()
-            assert 'v28' in page.locator('#status').inner_text()
+            version=re.search(r'const VERSION = "([^"]+)"',(ROOT/'sw.js').read_text(encoding='utf-8')).group(1)
+            assert version in page.locator('#status').inner_text()
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.locator('#open-app').click()
             page.locator('#settings').wait_for()

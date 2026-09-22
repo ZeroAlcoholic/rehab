@@ -23,7 +23,7 @@ try:
         connect.click()
         assert page.evaluate('window.authRequests')==1
         assert page.evaluate('window.authActiveGesture')
-        assert 'Google 登入視窗' in page.locator('dialog [role=status]').inner_text()
+        assert 'Google 登入視窗' in page.locator('dialog [data-connection-status]').inner_text()
         for name in ['儲存設定並準備授權','中斷 Google 連線','關閉']:
             assert page.get_by_role('button',name=name,exact=True).is_disabled(),name
         assert page.get_by_label('Google 用戶端 ID',exact=True).is_disabled()

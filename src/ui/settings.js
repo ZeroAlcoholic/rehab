@@ -13,6 +13,7 @@ export function openSettings({
   onBind,
   onExport,
   onImport,
+  onViewRecords,
 }) {
   const view = modal("資料設定");
   let bound = Boolean(settings.sheetId);
@@ -27,7 +28,7 @@ export function openSettings({
   });
   const status = el(
     "p",
-    { class: "muted", role: "status" },
+    { class: "muted", role: "status", 'data-connection-status':'' },
     connected ? "Google 已連線" : "Google 尚未連線",
   );
   const connect = button(
@@ -167,6 +168,12 @@ export function openSettings({
       }),
     { class: "secondary" },
   );
+  const importResult = el('p', {role:'status','aria-label':'備份匯入結果',tabindex:-1,hidden:true});
+  const viewRecords = button('查看紀錄', () => {
+    view.close();
+    onViewRecords?.();
+  }, {class:'secondary',hidden:true});
+  let importing = false;
   const upload = el("input", {
     type: "file",
     accept: ".json,application/json",
@@ -174,16 +181,34 @@ export function openSettings({
     onChange: async (e) => {
       view.error.textContent = "";
       const file = e.target.files?.[0];
-      if (!file) return;
+      if (!file || importing) return;
+      importing = true;
+      upload.disabled = true;
+      viewRecords.hidden = true;
+      importResult.hidden = false;
+      importResult.className = '';
+      importResult.setAttribute('role','status');
+      importResult.textContent = '正在匯入並確認儲存…';
       try {
         if (file.size > 10_000_000)
           throw new Error("備份超過 10 MB，請檢查檔案。");
-        await onImport(await file.text());
-        status.textContent = "備份已合併；尚未確認雲端的版本會保持待同步。";
+        const result = await onImport(await file.text());
+        bound = result.bound;
+        enableCloud(cloudConnected);
+        importResult.textContent = `備份已合併：目前共 ${result.recordCount} 筆紀錄，已存入這個瀏覽器。`
+          + (result.conflictCount ? `另有 ${result.conflictCount} 筆版本衝突待核對。` : '')
+          + (result.pendingCount ? '尚有資料待同步至 Google。' : '');
+        viewRecords.hidden = !onViewRecords;
       } catch (error) {
-        view.error.textContent = error.message;
+        importResult.setAttribute('role','alert');
+        importResult.className = 'error';
+        importResult.textContent = `匯入未完成：${error.message}`;
       } finally {
         upload.value = "";
+        upload.disabled = false;
+        importing = false;
+        importResult.focus();
+        importResult.scrollIntoView({block:'nearest'});
       }
     },
   });
@@ -246,6 +271,8 @@ export function openSettings({
     ),
     download,
     field("匯入 JSON 備份", upload),
+    importResult,
+    viewRecords,
   );
   if (effectiveClientId)
     run(prepare, () => prepareConnection(effectiveClientId));
