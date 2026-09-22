@@ -1,3 +1,4 @@
+import { machineDisplayName } from './record-quality.js';
 import { EXERCISES, INBODY_FIELDS } from "../domain/catalog.js";
 import { el, button, formatDate } from "./dom.js";
 import {LOCATIONS,PLAN_STATUS,TRIGGERS,RED_FLAGS} from '../domain/rehab.js';
@@ -73,7 +74,7 @@ export function renderHistory(
   if (records.length) container.append(archive);
   for (const record of [...records].reverse()) {
     const summary = record.kind==='rehab' ? (record.data.type==='plan'?'訓練調整計畫':`身體狀況 · ${record.data.score===null?'未量化':`${record.data.score}/10`}`) : record.kind === 'training'
-      ? `${EXERCISES.find(e=>e.id===record.data.exerciseId)?.name ?? record.data.exerciseId} · ${record.data.sets.length} 組 · ${record.data.machine || '機台未填'}`
+      ? `${EXERCISES.find(e=>e.id===record.data.exerciseId)?.name ?? record.data.exerciseId} · ${record.data.sets.length} 組 · ${machineDisplayName(record.data.machine)}`
       : `InBody · ${record.data.metrics.weight == null ? '體重未填' : `${record.data.metrics.weight} kg`} · ${Object.values(record.data.metrics).filter(v=>v!=null).length} 項量測`;
     archive.append(
       el(

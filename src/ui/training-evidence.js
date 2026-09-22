@@ -1,3 +1,4 @@
+import { machineDisplayName, reviewDetails } from './record-quality.js';
 import { el } from "./dom.js";
 import { PROGRESS_LABELS } from "../domain/body-insights.js";
 import { EXERCISES } from "../domain/catalog.js";
@@ -23,9 +24,7 @@ export function recordEvidence(record) {
       { class: "muted" },
       `${d.sets.length} 組 · 總次數 ${d.sets.reduce((n, s) => n + s.reps, 0)}${d.loadBasis === "added_plates" ? " · 掛片總重，未含機台起始阻力" : ""}`,
     ),
-    ...Object.entries(d.review ?? {}).map(([key, reason]) =>
-      el("p", { class: "flag" }, `待核對：${reason}`),
-    ),
+    reviewDetails(d),
     el(
       "p",
       {},
@@ -49,7 +48,7 @@ export function streamEvidence(stream) {
     el(
       "strong",
       {},
-      `${stream.name} · ${stream.machine || "機台未填"}${stream.metric === "bodyweight" ? "" : ` · ${stream.unit}`}`,
+      `${stream.name} · ${machineDisplayName(stream.machine)}${stream.metric === "bodyweight" ? "" : ` · ${stream.unit}`}`,
     ),
     stream.role
       ? el(

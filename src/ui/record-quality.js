@@ -1,9 +1,18 @@
 import { el, field, select } from "./dom.js";
 import { INBODY_FIELDS } from "../domain/catalog.js";
-export function trainingReviewLabel(keys = []) {
-  const labels = {machine:'機台',unit:'單位',posture:'姿勢',sets:'組數',load:'重量'};
-  const names = keys.map(key => labels[key]).filter(Boolean);
-  return names.length ? `${names.join('、')}待核對` : '';
+// Display only: keep original machine identity in saved data and comparison keys.
+export function machineDisplayName(machine = '') {
+  return machine.replace(/\s*[（(](?:型號|機型|機台|姿勢|姿式)待(?:核對|確認)[）)]\s*$/u, '').trim() || '未指定機台';
+}
+export function reviewDetails(data) {
+  const originalMachine = data.machine && machineDisplayName(data.machine) !== data.machine;
+  const reasons = Object.values(data.review ?? {});
+  if (!originalMachine && !reasons.length) return null;
+  return el('details', {class:'record-review-details'},
+    el('summary', {}, '紀錄詳情'),
+    originalMachine ? el('p', {class:'muted'}, `原始器材名稱：${data.machine}`) : null,
+    reasons.length ? el('p', {class:'muted'}, '部分條件尚未確認，暫不判定進步。') : null,
+    reasons.map(reason => el('p', {class:'muted'}, reason)));
 }
 export function qualityEditor(kind, data = {}) {
   const keys =
@@ -55,12 +64,12 @@ export function qualityEditor(kind, data = {}) {
   const element = el(
     "details",
     { class: "record-quality-editor" },
-    el("summary", {}, "資料來源、待核對與統計設定"),
+    el("summary", {}, "紀錄詳情與統計設定"),
     data.source ? el("p", { class: "muted" }, `來源：${data.source}`) : null,
     el(
       "p",
       { class: "muted" },
-      "待核對的數值保留原文。InBody 僅排除該欄位的變化計算；訓練暫停進步判定。核對原始資料後再取消勾選。",
+      "勾選尚未確認的欄位：InBody 暫不計算該數值的變化，訓練暫不判定進步。確認後可取消勾選。",
     ),
     el(
       "div",

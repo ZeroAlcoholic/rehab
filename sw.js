@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v29-import-feedback";
+const VERSION = "rehab-shell-v30-clear-training";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [

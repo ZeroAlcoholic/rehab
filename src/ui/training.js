@@ -1,4 +1,4 @@
-import { qualityEditor, trainingReviewLabel } from "./record-quality.js";
+import { qualityEditor, machineDisplayName } from "./record-quality.js";
 import { EXERCISES } from "../domain/catalog.js";
 import { exerciseIllustration } from './exercise-illustration.js';
 import { weightBasisLabel } from './training-sets.js';
@@ -190,24 +190,12 @@ export function openTraining({ data = null, reference = null, editing = false, r
     reference ? el('span',{},matchesReference() ? `前次 ${reference.date}` : '已變更條件，請確認重量') : null,
     quality.context().loadBasis === 'added_plates' ? el('span',{},weightBasisLabel({exerciseId:exercise.value,...quality.context()})) : null,
   ];
-  const reviewNotice = el('div',{class:'training-review'});
-  function updateReviewNotice() {
-    const label = trainingReviewLabel(quality.reviewKeys());
-    reviewNotice.replaceChildren(...(label ? [button(`${label}・查看`,()=>{
-      quality.element.open = true;
-      quality.element.querySelector('summary').focus();
-      quality.element.scrollIntoView({block:'nearest'});
-    },{class:'secondary'})] : []));
-  }
-  quality.element.addEventListener('input',updateReviewNotice);
-  updateReviewNotice();
   form.append(
     ...(quick ? [el('div',{class:'training-identity'},
       exerciseIllustration(initial.exerciseId),
       el('div',{},el('strong',{},EXERCISES.find(e=>e.id===initial.exerciseId).name),
-        el('p',{class:'training-machine'},initial.machine || '未指定機台'),
+        el('p',{class:'training-machine'},machineDisplayName(initial.machine)),
         el('p',{class:'training-context muted'},identityContext())))] : []),
-    reviewNotice,
     quick ? el('details',{class:'training-setup'},el('summary',{},'日期與器材設定'),setup) : setup,
     ...(repeating && !quick ? [el("p", {class:"muted"}, "填本次次數，或逐組點「同前次」。")] : []),
     ...(!quick ? [hint] : []),
@@ -256,7 +244,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
     if (!identity) return;
     identity.querySelector('svg').replaceWith(exerciseIllustration(exercise.value));
     identity.querySelector('strong').textContent = EXERCISES.find(e=>e.id===exercise.value).name;
-    identity.querySelector('.training-machine').textContent = machine.value || '未指定機台';
+    identity.querySelector('.training-machine').textContent = machineDisplayName(machine.value);
     identity.querySelector('.training-context').replaceChildren(...identityContext().filter(Boolean));
   }
   for (const input of [exercise,machine,unit,date]) input.addEventListener('input', updateIdentity);

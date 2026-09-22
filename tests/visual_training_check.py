@@ -25,12 +25,13 @@ try:
           for(const [exerciseId,machine,unit,sets,extra] of [
             ['chest_press','測試 A','kg',[{load:20,reps:10},{load:25,reps:8}],{}],
             ['chest_press','測試 B','lb',[{load:50,reps:12}],{}],
-            ['assisted_chinup','測試輔助','lb',[{load:40,reps:6}],{review:{posture:'握法待確認'}}],
+            ['assisted_chinup','測試輔助（型號待核對）','lb',[{load:40,reps:6}],{review:{posture:'握法待確認'}}],
             ['v_squat','測試掛片','lb',[{load:30,reps:8}],{loadBasis:'added_plates'}],
             ['calf_raise','測試暖身','kg',[{load:20,reps:10}],{analysisExcludedReason:'暖身'}]
           ]) await service.save('training',{date:localDate(),exerciseId,machine,unit,sets,
             pain:'unknown',technique:'unknown',note:'合成測試備註',...extra});
         }""")
+        baseline=page.evaluate("async()=>JSON.stringify(await (await import('./src/storage/repository.js')).openRepository().then(r=>r.read()))")
         page.reload()
         # A user can reach today's records before scrolling past the equipment list.
         assert page.locator('.dashboard-nav').bounding_box()['y'] < page.locator('#entry').bounding_box()['y']
@@ -61,7 +62,14 @@ try:
         plates=panel.locator('.day-record').filter(has_text='測試掛片')
         assert '掛片' in plates.locator('.set-strip').inner_text()
         assert page.locator('.equipment-shortcut .exercise-illustration').count()==4
-        assert page.locator('.equipment-shortcut').filter(has_text='測試輔助').get_by_text('姿勢待核對',exact=True).is_visible()
+        assisted_card=page.locator('.equipment-shortcut').filter(has_text='測試輔助')
+        assert assisted_card.locator('.equipment-name').inner_text()=='測試輔助'
+        assert '待核對' not in assisted_card.inner_text()
+        assert '待核對' not in panel.inner_text()
+        assisted.get_by_text('紀錄詳情',exact=True).click()
+        assert '握法待確認' in assisted.inner_text()
+        assert '測試輔助（型號待核對）' in assisted.inner_text()
+        assisted.get_by_text('紀錄詳情',exact=True).click()
         assert panel.locator('.day-totals').inner_text().startswith('已記錄')
         assert page.locator('svg [id]').evaluate_all('nodes=>new Set(nodes.map(n=>n.id)).size===nodes.length')
         press.get_by_text('備註',exact=True).click()
@@ -92,6 +100,7 @@ try:
         page.screenshot(path=str(ROOT/'artifacts/visual-day-mobile.png'))
         page.evaluate('scrollTo(0,0)')
         page.screenshot(path=str(ROOT/'artifacts/visual-equipment-mobile.png'))
+        assert page.evaluate("async()=>JSON.stringify(await (await import('./src/storage/repository.js')).openRepository().then(r=>r.read()))")==baseline, "Browsing must preserve the entire stored state"
         page.evaluate("""async()=>{
           const {openRepository}=await import('./src/storage/repository.js');
           const {createService}=await import('./src/app/service.js');
@@ -111,12 +120,16 @@ try:
         page.get_by_role('combobox',name='動作',exact=True).select_option('chest_press')
         assert '45 lb × 9' in page.locator('.set-reference').inner_text()
         page.get_by_role('button',name='關閉',exact=True).click()
-        page.get_by_role('button',name='記錄 輔助反握引體向上，測試輔助，輔助重量 lb，姿勢待核對',exact=True).click()
-        page.get_by_role('button',name='姿勢待核對・查看',exact=True).click()
+        page.get_by_role('button',name='記錄 輔助反握引體向上，測試輔助，輔助重量 lb',exact=True).click()
+        assert '待核對' not in page.locator('dialog[open]').inner_text()
+        assert page.locator('.training-machine').inner_text()=='測試輔助'
+        page.get_by_text('日期與器材設定',exact=True).click()
+        assert page.get_by_label('機台／場地識別').input_value()=='測試輔助（型號待核對）'
+        page.get_by_text('紀錄詳情與統計設定',exact=True).click()
         assert page.get_by_label('姿勢待核對',exact=True).is_visible()
         assert page.get_by_label('姿勢待核對',exact=True).is_checked()
         page.get_by_label('姿勢待核對',exact=True).uncheck()
-        assert page.locator('.training-review').inner_text()==''
+        assert not page.get_by_label('姿勢待核對',exact=True).is_checked()
         page.get_by_label('姿勢待核對',exact=True).check()
         page.get_by_role('button',name='關閉',exact=True).click()
         page.get_by_role('button',name='記錄 V-Squat 槓桿深蹲，測試掛片，掛片重量（不含起始阻力） lb',exact=True).click()

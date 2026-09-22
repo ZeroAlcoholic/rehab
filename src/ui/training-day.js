@@ -1,3 +1,4 @@
+import { machineDisplayName, reviewDetails } from './record-quality.js';
 import { trainingDay } from '../domain/training-day.js';
 import { el, button, field, select, localDate } from './dom.js';
 import { BODY_REGIONS } from '../domain/muscles.js';
@@ -74,7 +75,6 @@ export function renderTrainingDay(container, records, { onEdit, conflicts = [] }
       el('div', {class:'day-support'}, el('strong', {}, '協同'), support.length ? regionChips(support, 'supportSets') : '尚無對應部位'),
     );
     if (summary.excludedCount) children.push(el('p', {class:'muted'}, `${summary.excludedCount} 筆暖身／排除紀錄保留於下方，不計入動作、組數與部位摘要。`));
-    if (summary.reviewCount) children.push(el('p', {class:'flag'}, `${summary.reviewCount} 筆資料待核對，以上組數與部位僅供暫時參考。`));
     if (summary.unmappedCount) children.push(el('p', {class:'muted'}, `${summary.unmappedCount} 筆動作沒有部位對應，仍保留紀錄與組數。`));
     if (summary.regions.length) children.push(el('details', {class:'day-region-details'},
       el('summary', {}, '查看部位對應明細'),
@@ -89,11 +89,11 @@ export function renderTrainingDay(container, records, { onEdit, conflicts = [] }
         record.data.time ? el('time', {class:'muted'}, `${record.data.time}（台灣時間）`) : null,
         el('div', {class:'equipment-identity'}, exerciseIllustration(record.data.exerciseId),
           el('div', {}, el('strong', {}, EXERCISES.find(e => e.id === record.data.exerciseId)?.name ?? record.data.exerciseId),
-            el('p', {class:'muted'}, record.data.machine || '機台未填'))),
+            el('p', {class:'muted'}, machineDisplayName(record.data.machine)))),
         setStrip(record.data),
         record.data.note ? el('details', {class:'day-note'}, el('summary', {}, '備註'), el('p', {}, record.data.note)) : null,
         record.data.analysisExcludedReason ? el('p', {class:'flag'}, `不納入統計：${record.data.analysisExcludedReason}`) : null,
-        Object.keys(record.data.review ?? {}).length ? el('p', {class:'flag'}, `待核對：${Object.values(record.data.review).join('；')}`) : null,
+        reviewDetails(record.data),
       ),
       button('修改這筆紀錄', () => onEdit(record), {class:'secondary'}),
     )));

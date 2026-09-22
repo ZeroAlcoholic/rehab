@@ -3,26 +3,25 @@ import { BODY_REGIONS, MUSCLE_ROLES } from "../domain/muscles.js";
 import { el, field, select, button } from "./dom.js";
 import { exerciseIllustration } from './exercise-illustration.js';
 import { setStrip, weightBasisLabel } from './training-sets.js';
-import { trainingReviewLabel } from './record-quality.js';
+import { machineDisplayName } from './record-quality.js';
 
 const PRIMARY_LIMIT = 6;
 
 function shortcutButton(shortcut, onSelect) {
-  const reviewLabel = trainingReviewLabel(Object.keys(shortcut.record.data.review ?? {}));
+  const machine = machineDisplayName(shortcut.machine);
   return el(
     "button",
     {
       type: "button",
       class: "equipment-shortcut",
       onClick: () => onSelect(shortcut.record),
-      "aria-label": `記錄 ${shortcut.name}，${shortcut.machine}，${weightBasisLabel(shortcut.record.data)}${shortcut.metric === 'bodyweight' ? '' : ` ${shortcut.unit}`}${reviewLabel ? `，${reviewLabel}` : ''}`,
+      "aria-label": `記錄 ${shortcut.name}，${machine}，${weightBasisLabel(shortcut.record.data)}${shortcut.metric === 'bodyweight' ? '' : ` ${shortcut.unit}`}`,
     },
     el('span', {class:'equipment-identity'}, exerciseIllustration(shortcut.record.data.exerciseId),
-      el('span', {}, el('strong', {}, shortcut.name), el('span', {class:'equipment-name'}, shortcut.machine))),
+      el('span', {}, el('strong', {}, shortcut.name), el('span', {class:'equipment-name'}, machine))),
     el('span', {class:'equipment-card-meta'}, el("small", {}, `前次 ${shortcut.record.data.date}`),
       el('span', {class:'equipment-action','aria-hidden':'true'}, '記錄 ›')),
     setStrip(shortcut.record.data),
-    reviewLabel ? el('span',{class:'equipment-review'},reviewLabel) : null,
   );
 }
 
