@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>更新練習誌</title>
+  <link rel="stylesheet" href="./src/ui/theme.css">
+  <style>
+    body{font:18px/1.7 system-ui;max-width:36rem;margin:40px auto;padding:20px;color:var(--ink);background:var(--canvas)}
+    h1{font-size:1.5rem}p{overflow-wrap:anywhere}button,a{font:inherit}button,#open-app{display:inline-block;padding:12px 20px;border:0;border-radius:10px;background:var(--accent);color:var(--surface);text-decoration:none} [hidden]{display:none!important}
+  </style>
+</head>
+<body>
+  <h1>更新練習誌</h1>
+  <p>更新程式，保留這個瀏覽器的紀錄與待同步資料。</p>
+  <p id="status" role="status">正在檢查更新…</p>
+  <button id="retry" hidden>重試</button>
+  <a id="open-app" href="./" hidden>開啟練習誌</a>
+  <p>若提示仍有其他分頁，請先儲存輸入，再關閉其他練習誌分頁與應用視窗，只保留這個更新頁。不需要清除網站資料。</p>
+  <noscript>請啟用 JavaScript 後重試。</noscript>
+  <script type="module">
+    const status=document.querySelector('#status'),retry=document.querySelector('#retry'),openApp=document.querySelector('#open-app');
+    async function update(){
+      retry.hidden=true;openApp.hidden=true;status.textContent='正在更新程式，原有紀錄會保留…';
+      try{
+        const {ensureCurrentShell}=await import('./src/ui/shell-ready.js');
+        await ensureCurrentShell();
+        const version=await new Promise((resolve,reject)=>{
+          const channel=new MessageChannel();
+          const timer=setTimeout(()=>{channel.port1.close();reject(new Error('無法確認版本，請重試。'));},10000);
+          channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data.version);};
+          navigator.serviceWorker.controller.postMessage({type:'SHELL_INFO'},[channel.port2]);
+        });
+        status.textContent=`已確認版本：${version}。現在可開啟練習誌。`;
+        openApp.hidden=false;
+      }catch(error){status.textContent=error.message;retry.hidden=false;}
+    }
+    retry.addEventListener('click',update);
+    update();
+  </script>
+</body>
+</html>

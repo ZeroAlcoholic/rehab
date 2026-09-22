@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v27-auth-session";
+const VERSION = "rehab-shell-v28-public-update";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
@@ -70,8 +70,8 @@ self.addEventListener('message', event => {
   if (event.data?.type !== 'ACTIVATE_FROM_STARTER') return;
   event.waitUntil((async () => {
     const source = event.source;
-    const starter = new URL('private/rehab-start.html', self.registration.scope);
-    if (!source?.url || new URL(source.url).origin !== starter.origin || new URL(source.url).pathname !== starter.pathname) {
+    const starters = ['private/rehab-start.html', 'update.html'].map(path => new URL(path, self.registration.scope));
+    if (!source?.url || !starters.some(starter => new URL(source.url).origin === starter.origin && new URL(source.url).pathname === starter.pathname)) {
       port.postMessage({ready:false});
       return;
     }

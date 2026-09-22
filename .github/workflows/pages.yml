@@ -26,7 +26,7 @@ jobs:
       - name: Package only public application files
         run: |
           mkdir -p public-site/docs
-          cp index.html styles.css manifest.webmanifest sw.js public-site/
+          cp index.html update.html styles.css manifest.webmanifest sw.js public-site/
           cp -r src icons public-site/
           cp docs/start.html docs/setup.md docs/verification.md public-site/docs/
           touch public-site/.nojekyll
