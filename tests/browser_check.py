@@ -171,19 +171,22 @@ try:
         page.wait_for_function("document.querySelector('#sync-status').textContent.includes('已同步紀錄')")
         results.append('full Google UI boundary: authorization/create/upload/readback (controlled HTTP)')
 
-        # Reload deliberately drops the in-memory token, but must retain the original binding.
+        # F5 retains an unexpired session and syncs the original binding without authorization.
         page.reload()
+        page.wait_for_function("document.querySelector('#sync-status').textContent==='已同步紀錄'")
         page.locator('#sync').click()
-        page.get_by_role('dialog',name='資料設定').wait_for()
+        assert page.locator('dialog[open]').count()==0
+        page.locator('#settings').click()
         assert page.get_by_label('Google 用戶端 ID',exact=True).input_value()=='test-client.apps.googleusercontent.com'
-        page.get_by_role('button',name='連線 Google',exact=True).click()
-        page.get_by_text('Google 已連線',exact=True).wait_for()
+        assert page.get_by_role('button',name='已連線',exact=True).is_disabled()
         assert page.get_by_role('button',name='建立私人試算表',exact=True).is_disabled()
         page.get_by_role('button',name='關閉',exact=True).click()
         page.wait_for_function("document.querySelector('#sync-status').textContent.includes('已同步紀錄')")
         assert len(cloud['training_log'])==6 and len(cloud['inbody'])==2
         page.locator('.history-archive > summary').click()
-        results.append('reload then sync opens reconnect; stored Client ID and original Sheet reused without duplicate records (controlled HTTP)')
+        backup=page.evaluate("async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');return createService(await openRepository()).exportBackup();}")
+        assert 'fixture-token' not in backup
+        results.append('F5 resumes authorization and original Sheet without popup or duplicates; backup excludes token (controlled HTTP)')
 
         page.locator('.rehab-options > summary').click()
         page.get_by_role('button',name='記錄不適',exact=True).click()

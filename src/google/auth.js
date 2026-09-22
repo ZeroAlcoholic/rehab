@@ -1,4 +1,5 @@
 const SCOPE = "https://www.googleapis.com/auth/drive.file";
+const SESSION_KEY = `rehab.google-session.v1:${new URL('../../', import.meta.url).pathname}`;
 const fail = (message) => Object.assign(new Error(message), { code: "auth" });
 function authorizationError(code) {
   const reasons = {
@@ -18,13 +19,44 @@ export function createAuth({
   documentImpl = globalThis.document,
   now = () => Date.now(),
   timeoutMs = 120000,
+  getStorage = () => globalThis.sessionStorage,
 } = {}) {
   let accessToken = "",
     expiresAt = 0,
     clientId = "",
     prepared = false,
     loading = null,
-    pending = null;
+    pending = null,
+    saved = false;
+
+  function clearSession() {
+    saved = false;
+    try { getStorage()?.removeItem(SESSION_KEY); } catch { /* Storage may be unavailable. */ }
+  }
+  // Restore before rendering; never load GIS or extend Google's original expiry.
+  function restore(id) {
+    try {
+      const value = JSON.parse(getStorage()?.getItem(SESSION_KEY) ?? 'null');
+      if (!value || value.clientId !== id || value.scope !== SCOPE ||
+          typeof value.accessToken !== 'string' || !value.accessToken ||
+          !Number.isFinite(value.expiresAt) || value.expiresAt <= now()) {
+        clearSession();
+        return false;
+      }
+      clientId = id;
+      accessToken = value.accessToken;
+      expiresAt = value.expiresAt;
+      saved = true;
+      return true;
+    } catch { clearSession(); return false; }
+  }
+  function saveSession() {
+    try {
+      const storage = getStorage();
+      storage?.setItem(SESSION_KEY, JSON.stringify({clientId,accessToken,expiresAt,scope:SCOPE}));
+      saved = Boolean(storage);
+    } catch { clearSession(); }
+  }
 
   function loadLibrary() {
     if (getGoogle()?.accounts?.oauth2) return Promise.resolve();
@@ -67,6 +99,7 @@ export function createAuth({
   function disconnect() {
     accessToken = "";
     expiresAt = 0;
+    clearSession();
     pending?.finish(fail("已中斷 Google 連線。"));
   }
 
@@ -83,12 +116,14 @@ export function createAuth({
       prepared = false;
       clientId = id;
     }
+    if (isConnected()) return;
     await loadLibrary();
     if (clientId === id) prepared = true;
   }
 
   // Deliberately not async: no await may precede requestAccessToken's user gesture.
   function connect(id) {
+    if (id?.trim() === clientId && isConnected()) return Promise.resolve();
     if (!prepared || id?.trim() !== clientId)
       return Promise.reject(fail("請先儲存設定並完成準備授權，再按連線。"));
     if (pending)
@@ -132,6 +167,7 @@ export function createAuth({
             }
             accessToken = response.access_token;
             expiresAt = now() + (seconds - 30) * 1000;
+            saveSession();
             request.finish();
           },
           error_callback(error) {
@@ -146,7 +182,7 @@ export function createAuth({
             );
           },
         });
-        client.requestAccessToken({ prompt: "select_account" });
+        client.requestAccessToken({ prompt: "" });
       } catch {
         request.finish(fail("無法啟動 Google 授權，請重新準備授權。"));
       }
@@ -157,6 +193,7 @@ export function createAuth({
     if (!accessToken || now() >= expiresAt) {
       accessToken = "";
       expiresAt = 0;
+      clearSession();
       return false;
     }
     return true;
@@ -165,5 +202,5 @@ export function createAuth({
     if (!isConnected()) throw fail("Google 授權已到期或尚未連線，請重新連線。");
     return accessToken;
   }
-  return { prepare, connect, disconnect, token, isConnected };
+  return { prepare, connect, disconnect, token, isConnected, restore, sessionSaved: () => saved };
 }

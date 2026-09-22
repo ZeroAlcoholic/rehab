@@ -4,6 +4,7 @@ export function openSettings({
   settings,
   defaultClientId = "",
   connected,
+  isConnected,
   onPrepare,
   onConnect,
   onDisconnect,
@@ -35,8 +36,10 @@ export function openSettings({
       run(connect, async () => {
         enableCloud(false);
         status.textContent = '請在 Google 登入視窗完成授權，再回到這裡。';
-        await onConnect(clientId.value.trim());
-        status.textContent = "Google 已連線";
+        const saved = await onConnect(clientId.value.trim());
+        status.textContent = saved === false
+          ? 'Google 已連線；瀏覽器未允許保留本次授權，重新整理後須再連線。'
+          : "Google 已連線";
         enableCloud(true);
       }, {authorization:true}),
     { class: "primary", disabled: true },
@@ -83,6 +86,18 @@ export function openSettings({
     create.disabled = !value || bound;
     list.disabled = !value;
     bind.disabled = !value;
+    updateConnect();
+  }
+  function updateConnect() {
+    connect.textContent = cloudConnected ? '已連線' : '連線 Google';
+    connect.disabled = authorizing || cloudConnected || !prepared;
+  }
+  async function prepareConnection(requestedId = clientId.value.trim()) {
+    prepared = false;
+    updateConnect();
+    await onPrepare(requestedId);
+    if (clientId.value.trim() === requestedId) prepared = true;
+    updateConnect();
   }
   async function run(control, action, {authorization = false} = {}) {
     if (authorizing) return;
@@ -99,7 +114,16 @@ export function openSettings({
     try {
       await action();
     } catch (error) {
-      view.error.textContent = error.message;
+      let detail = error.message;
+      if (error.code === 'auth' && control !== prepare) {
+        onDisconnect();
+        prepared = false;
+        enableCloud(false);
+        status.textContent = 'Google 連線已失效；紀錄仍保留，請重新連線。';
+        try { await prepareConnection(); }
+        catch { detail += ' 請按「儲存設定並準備授權」重試。'; }
+      }
+      view.error.textContent = detail;
       if (authorization) status.textContent = 'Google 連線未完成，請查看下方原因。';
       view.error.tabIndex = -1;
       view.error.focus();
@@ -111,21 +135,16 @@ export function openSettings({
         enableCloud(cloudConnected);
       }
       control.disabled = control === create && bound;
-      if (control === connect) connect.disabled = !prepared;
+      if ([create, list, bind].includes(control)) enableCloud(cloudConnected);
+      updateConnect();
     }
   }
   const prepare = button(
     "儲存設定並準備授權",
     () =>
       run(prepare, async () => {
-        const requestedId = clientId.value.trim();
-        connect.disabled = true;
-        prepared = false;
-        await onPrepare(requestedId);
-        if (clientId.value.trim() !== requestedId) return;
-        prepared = true;
-        connect.disabled = false;
-        status.textContent = "已準備，可按連線 Google。";
+        await prepareConnection();
+        status.textContent = cloudConnected ? 'Google 已連線' : "已準備，可按連線 Google。";
       }),
     { class: "secondary" },
   );
@@ -194,8 +213,10 @@ export function openSettings({
       "中斷 Google 連線",
       () => {
         onDisconnect();
+        prepared = false;
         enableCloud(false);
         status.textContent = "已中斷連線；手機資料仍保留。";
+        run(prepare, () => prepareConnection());
       },
       { class: "quiet" },
     ),
@@ -227,10 +248,16 @@ export function openSettings({
     field("匯入 JSON 備份", upload),
   );
   if (effectiveClientId)
-    run(prepare, async () => {
-      await onPrepare(effectiveClientId);
-      if (clientId.value.trim() !== effectiveClientId) return;
-      prepared = true;
-      connect.disabled = false;
-    }).catch(() => {});
+    run(prepare, () => prepareConnection(effectiveClientId));
+  updateConnect();
+  // Only watch an open dialog; expire its UI as well as the token.
+  const watch = setInterval(() => {
+    if (!authorizing && cloudConnected && isConnected && !isConnected()) {
+      prepared = false;
+      enableCloud(false);
+      status.textContent = 'Google 授權已到期；紀錄仍保留，同步前請重新連線。';
+      run(prepare, () => prepareConnection());
+    }
+  }, 1000);
+  view.dialog.addEventListener('close', () => clearInterval(watch), {once:true});
 }

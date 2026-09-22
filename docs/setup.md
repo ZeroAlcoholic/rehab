@@ -23,7 +23,9 @@
 
 Google 授權視窗必須由使用者點擊啟動；程式先在準備授權步驟載入 GIS，再由連線按鈕同步呼叫 `requestAccessToken()`。若視窗被封鎖，允許本站彈出視窗後重試。取消、關閉或拒絕權限不會刪除本機紀錄。參考 [GIS token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model) 與 [授權錯誤](https://developers.google.com/identity/oauth2/web/guides/error)。
 
-Access token 只留在記憶體，到期或重載頁面後需再點連線。主畫面按同步時，尚未連線或尚未綁定 Sheet 會直接開啟設定；部署預設或已儲存的 Client ID 會自動準備授權，不必重貼。權杖不會在背景刷新。Google 的 External Testing 七天規則涉及測試授權／refresh token；本程式沒有取得或儲存 refresh token，不可把七天理解為單次 access token 的有效期。實際 access token 依 Google 回傳的 `expires_in` 判斷。參考 [OAuth token 到期規則](https://developers.google.com/identity/protocols/oauth2#expiration)。網站「中斷連線」清除本機記憶體權杖，不撤銷整個 Google 授權；若要撤銷，請到 [Google 帳號連線設定](https://myaccount.google.com/connections) 操作。
+Access token 及原始到期時間保留在目前分頁的 sessionStorage，F5 會在核對 Client ID、scope 與期限後恢復，已綁定 Sheet 則自動同步。成功後按鈕顯示「已連線」且不可重按；不強制每次顯示帳號選擇。授權到期、手動中斷或更換 Client ID 會清除暫存；分頁工作階段結束後也可能需要重連。若瀏覽器禁止暫存，會明示重新整理後須再連線，當次仍可同步。
+
+sessionStorage 是同來源 JavaScript 可讀取的短期瀏覽器儲存，不是加密保管庫；權杖不進 IndexedDB、localStorage、JSON 備份或試算表。這是維持純靜態網站並支援 F5 的取捨，不提供永久登入。權杖不在背景刷新，也沒有取得或儲存 refresh token。實際到期依 Google 回傳的 `expires_in`，恢復時不延長。參考 [OAuth token 到期規則](https://developers.google.com/identity/protocols/oauth2#expiration) 與 [瀏覽器 token 儲存](https://www.rfc-editor.org/rfc/rfc10017.html#section-8.5)。主畫面按同步時，尚未連線或尚未綁定 Sheet 會開啟設定，不必重貼 Client ID。網站「中斷連線」清除本分頁授權，不撤銷整個 Google 授權；若要撤銷，請到 [Google 帳號連線設定](https://myaccount.google.com/connections) 操作。
 
 ## 首次連線與換機
 

@@ -38,6 +38,8 @@ try {
   const repository = await openRepository(),
     service = createService(repository),
     auth = createAuth();
+  const initialSettings = (await service.read()).settings;
+  auth.restore(initialSettings.clientId || readDefaultClientId());
   const remote = createSheets({ getToken: () => auth.token() }),
     engine = createSyncEngine({ repository, remote });
   const channel = globalThis.BroadcastChannel
@@ -209,6 +211,7 @@ try {
       settings: state.settings,
       defaultClientId: readDefaultClientId(),
       connected: auth.isConnected(),
+      isConnected: auth.isConnected,
       onPrepare: async (id) => {
         await service.setClientId(id);
         await changed();
@@ -218,6 +221,7 @@ try {
         await auth.connect(id);
         await changed("Google 已連線。");
         void autoSync();
+        return auth.sessionSaved();
       },
       onDisconnect: () => {
         auth.disconnect();
@@ -263,6 +267,7 @@ try {
   document
     .querySelectorAll("[data-startup]")
     .forEach((button) => (button.disabled = false));
+  void autoSync();
   if ("serviceWorker" in navigator)
     navigator.serviceWorker
       .register("./sw.js")

@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v26-auth-state";
+const VERSION = "rehab-shell-v27-auth-session";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [

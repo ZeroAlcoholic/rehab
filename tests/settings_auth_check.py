@@ -1,7 +1,7 @@
 """Settings concurrency/error visibility using controlled GIS; no real account."""
 from pathlib import Path
 import functools,http.server,threading
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 ROOT=Path(__file__).resolve().parents[1]
 class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self,*args):pass
@@ -30,7 +30,7 @@ try:
         page.keyboard.press('Escape')
         assert page.locator('dialog[open]').count()==1
         page.evaluate("window.authConfig.error_callback({type:'popup_closed'})")
-        assert connect.is_enabled()
+        expect(connect).to_be_enabled()
         assert page.get_by_role('button',name='關閉',exact=True).is_enabled()
         error=page.locator('dialog [role=alert]')
         assert '視窗已關閉' in error.inner_text()
@@ -39,17 +39,61 @@ try:
         assert error.evaluate('n=>n===document.activeElement')
         connect.click()
         page.evaluate("window.authConfig.callback({error:'access_denied'})")
+        expect(connect).to_be_enabled()
         assert 'access_denied' in error.inner_text()
         assert page.evaluate('window.authRequests')==2
         connect.click()
         page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
         page.get_by_text('Google 已連線',exact=True).wait_for()
+        assert page.get_by_role('button',name='已連線',exact=True).is_disabled()
         assert page.get_by_role('button',name='建立私人試算表',exact=True).is_enabled()
+        page.get_by_role('button',name='關閉',exact=True).click()
+        # A restored session can be explicitly disconnected and reconnected immediately.
+        page.reload()
+        page.locator('#settings').click()
+        assert page.get_by_role('button',name='已連線',exact=True).is_disabled()
+        assert page.evaluate('window.authRequests || 0')==0
+        assert page.get_by_role('button',name='建立私人試算表',exact=True).is_enabled()
+        page.get_by_role('button',name='中斷 Google 連線',exact=True).click()
+        page.get_by_role('button',name='連線 Google',exact=True).click()
+        page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
+        # Expiry while settings stays open must restore a usable reconnect action.
+        page.clock.install()
+        page.clock.fast_forward(3600000)
+        page.get_by_role('button',name='連線 Google',exact=True).wait_for()
+        page.get_by_role('button',name='連線 Google',exact=True).click()
+        page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
+        assert page.get_by_role('button',name='已連線',exact=True).is_disabled()
+        page.get_by_role('button',name='中斷 Google 連線',exact=True).click()
+        expect(page.get_by_role('button',name='連線 Google',exact=True)).to_be_enabled()
+        page.get_by_role('button',name='關閉',exact=True).click()
+        page.reload()
+        page.locator('#settings').click()
+        page.get_by_role('button',name='連線 Google',exact=True).click()
+        page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
+        page.route('https://www.googleapis.com/drive/**',lambda route:route.fulfill(status=401,content_type='application/json',body='{}'))
+        page.get_by_role('button',name='關閉',exact=True).click()
+        page.reload()
+        page.locator('#settings').click()
+        page.get_by_role('button',name='尋找既有試算表',exact=True).click()
+        expect(page.get_by_role('button',name='已連線',exact=True)).to_have_count(0)
+        assert page.get_by_role('button',name='尋找既有試算表',exact=True).is_disabled()
+        assert page.evaluate("Object.keys(sessionStorage).filter(k=>k.startsWith('rehab.google-session.')).length")==0
+        page.get_by_role('button',name='連線 Google',exact=True).click()
+        page.wait_for_function('window.authRequests === 1')
+        page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
+        assert page.get_by_role('button',name='已連線',exact=True).is_disabled()
+        page.get_by_role('button',name='中斷 Google 連線',exact=True).click()
+        page.get_by_role('button',name='關閉',exact=True).click()
+        page.reload()
+        page.locator('#settings').click()
+        page.get_by_role('button',name='連線 Google',exact=True).click()
+        page.evaluate("window.authConfig.callback({access_token:'fixture',expires_in:3600,scope:'https://www.googleapis.com/auth/drive.file'})")
         page.get_by_label('Google 用戶端 ID',exact=True).fill('other.apps.googleusercontent.com')
-        assert connect.is_disabled(),'Changing client must require fresh preparation'
+        assert page.get_by_role('button',name='連線 Google',exact=True).is_disabled(),'Changing client must require fresh preparation'
         assert page.get_by_role('button',name='建立私人試算表',exact=True).is_disabled()
         assert page.get_by_role('button',name='尋找既有試算表',exact=True).is_disabled()
         page.get_by_role('button',name='關閉',exact=True).click()
         browser.close()
-        print('PASS: synchronous gesture, exclusive auth controls, Escape lock, visible focused errors, retry, success, edited client invalidates cloud UI')
+        print('PASS: auth gesture/lock/errors, connected button disabled, F5 resumes without popup, expiry/disconnect/401/client change reconnect correctly')
 finally:server.shutdown()
