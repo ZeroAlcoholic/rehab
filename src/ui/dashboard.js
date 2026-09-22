@@ -84,6 +84,7 @@ export function renderDashboard(container, analysis, rehabActions={}) {
     createBodyMap(analysis.exercises, {
       ...(previousMap?.dataset ?? {}),
       rehabRegions:analysis.rehab.regions,
+      onFindEquipment:rehabActions.onFindEquipment,
       onExercise(id) {
         const target = container.querySelector(`[data-exercise-id="${id}"]`);
         if (target) {

@@ -50,6 +50,7 @@ export function createBodyMap(
     focusOpen = "false",
     rankingOpen = "false",
     onExercise = () => {},
+    onFindEquipment,
     rehabRegions = [],
   } = {},
 ) {
@@ -240,7 +241,7 @@ export function createBodyMap(
       el("strong", {}, r.name),
       el("span", {}, regionValue(r, mode)),
     );
-    detail.replaceChildren(...renderBodyDetail(r, model, mode, onExercise));
+    detail.replaceChildren(...renderBodyDetail(r, model, mode, onExercise, onFindEquipment));
     chooser.value = regionId;
     state();
   }

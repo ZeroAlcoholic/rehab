@@ -6,13 +6,14 @@ import { createSheets } from "./google/sheets.js";
 import { createSyncEngine } from "./sync/engine.js";
 import { analyze } from "./domain/analytics.js";
 import { openTraining } from "./ui/training.js";
+import { renderTrainingDay } from "./ui/training-day.js";
 import { openInbody } from "./ui/inbody.js";
 import { renderDashboard } from "./ui/dashboard.js";
 import { renderHistory } from "./ui/history.js";
 import { openSettings } from "./ui/settings.js";
 import { renderEquipmentShortcuts } from "./ui/equipment-shortcuts.js";
 import { localDate } from "./ui/dom.js";
-import { repeatTraining, startFromEquipment } from "./domain/training-template.js";
+import { startFromEquipment } from "./domain/training-template.js";
 import {openSymptom,openRehabPlan} from './ui/rehab-form.js';
 
 const initialRange = new URL(location.href).searchParams.get("range");
@@ -21,6 +22,14 @@ if (["30", "56", "0"].includes(initialRange))
 const notice = document.querySelector("#notice"),
   status = document.querySelector("#sync-status"),
   syncButton = document.querySelector("#sync");
+// Native text zoom can wrap the sticky navigation; anchors need its actual height.
+const navigation = document.querySelector('.dashboard-nav');
+const updateScrollOffset = () => document.documentElement.style.setProperty(
+  '--section-scroll-offset', `${Math.ceil(navigation.getBoundingClientRect().height) + 12}px`,
+);
+new ResizeObserver(updateScrollOffset).observe(navigation);
+navigation.addEventListener('click', updateScrollOffset);
+updateScrollOffset();
 function message(text, error = false) {
   notice.textContent = text;
   notice.classList.toggle("error", error);
@@ -51,19 +60,8 @@ try {
           ? `已同步紀錄${auth.isConnected() ? "" : " · Google 待連線"}`
           : "僅存手機 · 尚未設定雲端";
     if (!navigator.onLine) status.textContent += " · 離線";
-    renderEquipmentShortcuts(
-      document.querySelector("#equipment-shortcuts"),
-      state.records,
-      {
-        onSelect: (record) =>
-          openTraining({
-            data: startFromEquipment(record.data, localDate()),
-            repeating: true,
-            quick: true,
-            onSave: (data) => save("training", data),
-          }),
-      },
-    );
+    showEquipment();
+    renderTrainingDay(document.querySelector('#training-day'), state.records, {onEdit: edit, conflicts: state.conflicts});
     const days = Number(document.querySelector("#range").value),
       to = localDate(),
       from = days
@@ -74,7 +72,7 @@ try {
     renderDashboard(
       document.querySelector("#dashboard"),
       analyze(state.records, { from, to, inbodyFrom: null }),
-      {onSymptom:()=>openSymptom({onSave:data=>save('rehab',data)}),onPlan:editPlan,onExercise:recordPlanned,onRepeat:repeat},
+      {onSymptom:()=>openSymptom({onSave:data=>save('rehab',data)}),onPlan:editPlan,onExercise:recordPlanned,onRepeat:repeat,onFindEquipment:findEquipment},
     );
     renderHistory(document.querySelector("#history"), {
       records: state.records,
@@ -121,6 +119,7 @@ try {
   }
   async function save(kind, data, options) {
     await service.save(kind, data, options);
+    if (kind === 'training') document.querySelector('#training-day').dataset.date = data.date;
     await changed("已存手機。");
     void autoSync();
   }
@@ -137,7 +136,16 @@ try {
     });
   }
   function repeat(record) {
-    openTraining({data:repeatTraining(record.data,localDate()),repeating:true,onSave:(data)=>save("training",data)});
+    openTraining({data:startFromEquipment(record.data,localDate()),reference:record.data,repeating:true,quick:true,onSave:(data)=>save("training",data)});
+  }
+  function showEquipment(regionId) {
+    renderEquipmentShortcuts(document.querySelector('#equipment-shortcuts'),state.records,{onSelect:repeat,regionId});
+  }
+  function findEquipment(regionId) {
+    showEquipment(regionId);
+    const target = document.querySelector('#equipment-shortcuts select');
+    target?.focus({preventScroll:true});
+    document.querySelector('#entry').scrollIntoView({block:'start'});
   }
   function editPlan(){
     const plan=state.records.filter(r=>r.kind==='rehab'&&r.data.type==='plan').at(-1);

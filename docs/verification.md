@@ -1,5 +1,51 @@
 # 驗證紀錄
 
+## 2026-09-22：正式發布前驗證（v26）
+
+95 項 Node 測試、46 個模組邊界與 15 支 Chrome 瀏覽器流程全部通過，包含備份匯入、記錄讀回、離線、舊版更新保留資料及授權介面。Google 邊界採受控回應；真實 Google 帳號與 Android 實機仍未驗證。發布使用 Pages workflow 的公開資產白名單，私人備份不隨網站發布，須另在正式站匯入或透過私人 Sheet 同步。下方各節的「尚未部署」描述為當時驗證狀態；實際發布結果以 GitHub Actions 及線上版本為準。
+
+## 2026-09-22：Google 登入狀態與錯誤診斷（v26，本機）
+
+正式 v15 在 Chrome 手機尺寸測試中開啟主頁加一個 Google 登入頁，未重現兩個 Google 視窗。已確認授權期間仍可修改 Client ID／準備／中斷，畫面仍顯示尚未連線；中斷後登入視窗仍存在，取消後錯誤位置超出手機可見範圍。
+
+修正授權期間的控制項與 Escape 保護、等待狀態、鄰近連線區的錯誤與焦點；更換 Client ID 後需重新準備。已知 OAuth 錯誤使用固定分類，不顯示原始錯誤描述或 token。settings_auth_check 先重現缺少等待狀態，再驗證手勢同步、鎖定、取消恢復、錯誤可見、重試成功及 Client ID 切換。
+
+這些證據確認介面與授權流程防護，不能確認使用者手機上的帳號／Cloud 設定錯誤已修復。真實帳號登入、授權後 callback、Android PWA 往返仍待實機錯誤與驗證；這版尚未部署。參考 Google [token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model) 及 [error handling](https://developers.google.com/identity/oauth2/web/guides/error)。
+
+## 2026-09-22：校準待核對提示（v25）
+
+器材入口以短標籤及可及名稱顯示既有待核對欄位，記錄表單提供展開既有核對設定的按鈕。勾選狀態改變時即更新提示，不自行解除資料標記。當日摘要加上「已記錄」，避免把現有組數解讀成全天完整訓練量。
+
+visual_training 先重現卡片缺少姿勢提示，再驗證標籤、查看入口、勾選即時更新、表單正常關閉及手機版面。94 項 Node、46 模組邊界及 visual_training、gym_entry、training_day、training_flow、submit_recovery、forest_ux、browser、shell_upgrade 通過。獨立聚焦 review 無阻斷發現。私人校正資料另於本機核對：不同組數或有待核對條件時不直接判定進退，紀錄與原始版本保留；無私人數據加入公開測試。
+
+## 2026-09-22：完工 review（v24）
+
+獨立程式審查未發現新的阻斷問題。實際表單檢查補上各組負荷單位與掛片語意：重量／輔助／掛片欄位就近標示 kg、lb，快速記錄掛片時明示不含起始阻力。新增瀏覽器斷言先重現缺少標示，再確認修正。
+
+最終重跑 94 項 Node 測試、46 模組邊界檢查，以及 visual_training、gym_entry、training_day、submit_recovery、training_flow、forest_ux、browser、shell_upgrade、body_map、atlas_ux、longitudinal、history_disclosure、rehab、onboarding 共 14 支 Chrome 流程，均通過。另以已匯入的私人資料檢查 320／412／1440px 與 100%／200% 字級，頁面及快速記錄視窗無橫向溢出，沿用前次後的本次次數仍留白。
+
+此為本機完工驗證；Android 實機键盤與操作體感、真實 Google 授權仍未涵蓋。Google 流程使用受控 HTTP 回應。未提交、推送或部署。
+
+## 2026-09-22：器材辨識與首屏整理（v23）
+
+既有 SVG 增加機架、靠墊、配重及人物分層，仍是通用示意而非特定機型照片；徒手深蹲不顯示機台。導覽移至清單前方，搜尋與部位篩選預設收合並保留已選條件。快速記錄顯示動作圖、獨立機台名稱及分行日期，說明收進既有設定。
+
+visual_training 新增首頁第一張器材完整可見、篩選收合、導覽位置、表單身分與切換動作換圖的瀏覽器斷言。visual_training、gym_entry、forest_ux、training_flow、training_day、browser、shell_upgrade 與 46 模組邊界檢查通過。檢視全動作圖及私人紀錄的手機尺寸畫面。Android 實機與真實 Google 帳號仍未驗證；未部署。
+
+## 2026-09-22：健身房記錄與當日部位摘要
+
+- 94 項 Node 測試通過，46 個模組通過邊界檢查。新摘要沿用既有肌群對應，沒有增加訓練效果或醫療判讀規則。
+- `visual_training_check.py`：目錄動作示意圖、正背面主要／協同上色、靜態圖不含小字或互動焦點、來源展開、逐組變動負荷、同重合併呈現、輔助／掛片標示、同機台不同單位辨識、備註收合、唯一 SVG ID，以及 320／412／1100px、200% 文字通過。
+- v20 更新預快取改為重新取得資源。`shell_upgrade_check.py` 新增仍在 HTTP 有效期限內的舊資產，先重現新殼層混入舊程式，再驗證修正；保留未同步紀錄、其他分頁草稿、下載失敗重試與離線讀回案例。
+- `gym_entry_check.py`：器材搜尋／部位入口、逐組前次參考、條件變更、移除組別對應、明確填入次數、儲存讀回、取消／確認捨棄與手機版面通過。
+- `training_day_check.py`：今天空狀態不冒用舊紀錄、最近一次查找、主要／協同來源、暖身排除、直接修改、跨概覽日期篩選、儲存後切至紀錄日期、重載保留資料、只有版本衝突的日期與 320／412px 放大 200% 通過。
+- `submit_recovery_check.py`：同一對話框重複送出只執行一次、儲存期間鎖定輸入與 Escape、失敗保留值並恢復原停用狀態、再次送出成功通過。這是受控失敗案例；真正 IndexedDB 流程由下列回歸測試覆蓋。
+- 已重跑 `browser_check.py`、`training_flow_check.py`、`longitudinal_check.py`、`history_disclosure_check.py`、`body_map_check.py`、`rehab_check.py`、`onboarding_check.py`，均通過。包含實際 Chrome、IndexedDB、離線殼層、備份與受控 Google HTTP；不是實際 Google 帳號驗證。
+- `atlas_ux_check.py` 與 `forest_ux_check.py` 通過。新增導覽入口曾導致 320px／200% 標題被遮住，已改用實際導覽高度設定捲動間距；保留原遮擋斷言並新增當日入口案例後通過。
+- 已檢視合成資料及私人備份匯入後的手機尺寸畫面；私人截圖保留於 private/，未放入公開測試或文件。原生數字輸入模式已驗證，但 Android 實機鍵盤、切換 App 與長時間操作體感尚未驗證。本輪未部署，未新增照片、器材管理或跨重整草稿。動作圖是一般示意，並非特定機型照片。
+
+## 2026-09-17：先前驗證紀錄
+
 日期：2026-09-17。範圍：第一版程式、本機瀏覽器行為、受控的 Google 邊界與 GitHub Pages 部署。
 
 ## 已驗證

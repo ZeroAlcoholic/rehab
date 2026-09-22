@@ -46,9 +46,11 @@ try:
     assert min(nav.locator('a').evaluate_all('xs=>xs.map(x=>x.getBoundingClientRect().height)'))>=44
     nav.get_by_role('link',name='人體圖',exact=True).click()
     assert page.locator('#movement').bounding_box()['y']>=nav.bounding_box()['height'], (width,size,page.locator('#movement').bounding_box()['y'],nav.bounding_box())
+    nav.get_by_role('link',name='當日',exact=True).click()
+    assert page.locator('#training-day').bounding_box()['y']>=nav.bounding_box()['height'], (width,size,page.locator('#training-day').bounding_box()['y'],nav.bounding_box())
   page.evaluate("document.documentElement.style.fontSize='100%'")
   page.set_viewport_size({'width':412,'height':915})
-  page.get_by_role('navigation',name='訓練概覽導覽').get_by_role('link',name='總覽',exact=True).click()
+  page.get_by_role('navigation',name='訓練概覽導覽').get_by_role('link',name='記錄',exact=True).click()
   page.locator('#record').click()
   assert page.locator('dialog').evaluate('n=>n.scrollWidth<=n.clientWidth')
   assert not errors,errors

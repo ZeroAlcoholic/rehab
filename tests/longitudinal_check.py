@@ -48,12 +48,14 @@ try:
         assert page.get_by_label('第 2 組次數').input_value() == ''
         page.get_by_label('第 1 組次數').fill('12')
         page.get_by_label('第 2 組次數').fill('9')
+        page.get_by_text('日期與器材設定',exact=True).click()
         page.get_by_label('時間（台灣時間，選填）',exact=True).fill('21:10')
         page.get_by_role('button',name='儲存紀錄',exact=True).click()
         page.locator('dialog[open]').wait_for(state='hidden')
         page.locator('.history-archive > summary').click()
         page.locator('#history').get_by_role('button',name='再練一次',exact=True).last.click()
-        assert page.get_by_label('第 2 組次數').input_value() == '9'
+        assert page.get_by_label('第 2 組次數').input_value() == ''
+        assert '× 9' in page.locator('.set-reference').nth(1).inner_text()
         page.get_by_role('button',name='關閉',exact=True).click()
         results.append('repeat preserves per-set setup, clears old observations, creates new identity; history supports any workout')
 

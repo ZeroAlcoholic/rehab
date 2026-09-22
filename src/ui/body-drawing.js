@@ -15,13 +15,14 @@ const svgEl = (tag, attrs = {}, ...children) => {
   return n;
 };
 const shape = ({ tag = "path", ...attrs }) => svgEl(tag, attrs);
-export function drawBody(model, { view, mode, regionId, skeleton, onSelect, rehabRegions=[] }) {
+let drawingId = 0;
+export function drawBody(model, { view, mode, regionId, skeleton, onSelect, rehabRegions=[], interactive=true, labels=true }) {
   const svg = svgEl("svg", {
     viewBox: "-40 0 320 535",
-    role: "group",
+    role: interactive ? "group" : "img",
     "aria-label": view === "front" ? "人體正面肌群圖" : "人體背面肌群圖",
   });
-  const shadeId=`muscle-shade-${view}`;
+  const shadeId=`muscle-shade-${view}-${++drawingId}`;
   svg.append(svgEl('defs',{},svgEl('linearGradient',{id:shadeId,x1:0,y1:0,x2:1,y2:0},
     svgEl('stop',{offset:'0%','stop-color':'var(--accent)','stop-opacity':'.13'}),
     svgEl('stop',{offset:'40%','stop-color':'var(--surface)','stop-opacity':'.26'}),
@@ -53,18 +54,16 @@ export function drawBody(model, { view, mode, regionId, skeleton, onSelect, reha
       "g",
       {
         class: "body-region",
-        role: "button",
-        tabindex: 0,
+        ...(interactive ? {role:"button",tabindex:0,"aria-pressed":id === regionId} : {}),
         "data-region": id,
         "data-tone": tone,
         "data-coverage": r.recordCount ? "recorded" : "none",
         "aria-label": `${r.name}，${description}`,
-        "aria-pressed": id === regionId,
       },
       ...paths.map(shape),
     );
-    g.addEventListener("click", () => onSelect(id));
-    g.addEventListener("keydown", (e) => {
+    if (interactive) g.addEventListener("click", () => onSelect(id));
+    if (interactive) g.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
         onSelect(id, true);
@@ -91,13 +90,13 @@ export function drawBody(model, { view, mode, regionId, skeleton, onSelect, reha
   if (!skeleton) bones.style.display = "none";
   svg.append(bones);
   svg.append(svgEl('g',{class:'body-surface-details','aria-hidden':true},...SURFACE_DETAILS.shared.map(shape),...SURFACE_DETAILS[view].map(shape)));
-  const labels = svgEl("g", {
+  const labelGroup = svgEl("g", {
     class: "body-anatomy-labels",
     "aria-hidden": true,
   });
   for (const [id, x, y, tx, ty, name] of REGION_LABELS[view]) {
     const left = tx < 120;
-    labels.append(
+    labelGroup.append(
       svgEl("path", {
         d: `M${x} ${y} L${left ? 36 : 204} ${ty} L${left ? -34 : 274} ${ty}`,
       }),
@@ -112,6 +111,6 @@ export function drawBody(model, { view, mode, regionId, skeleton, onSelect, reha
       ),
     );
   }
-  svg.append(labels);
+  if (labels) svg.append(labelGroup);
   return svg;
 }

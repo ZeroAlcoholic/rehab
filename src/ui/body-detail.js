@@ -1,11 +1,12 @@
 import { el, button } from "./dom.js";
 import { PROGRESS_LABELS } from "../domain/body-insights.js";
 import { streamEvidence, recordEvidence } from "./training-evidence.js";
-export function renderBodyDetail(selected, model, mode, onExercise) {
+export function renderBodyDetail(selected, model, mode, onExercise, onFindEquipment) {
   const content = [
     el("p", { class: "body-region-eyebrow" }, "相關訓練"),
     el("h3", {}, selected.name),
   ];
+  if (onFindEquipment) content.push(button(`找${selected.name}相關器材`,()=>onFindEquipment(selected.id),{class:'secondary'}));
   if(selected.needsAdjustment)content.push(el('p',{class:'adjust-legend'},'◇ 動作需確認 · 不代表此處受傷'),el('a',{href:'#rehab-panel',class:'rehab-plan-link',onClick:()=>{const options=document.querySelector('#rehab-panel .rehab-options');if(options)options.open=true;}},'查看動作計畫 →'));
   if (mode === "progress") {
     content.push(

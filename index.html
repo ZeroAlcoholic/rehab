@@ -39,6 +39,9 @@
       </button>
     </header>
     <main>
+      <nav class="dashboard-nav" aria-label="訓練概覽導覽">
+        <a href="#entry">記錄</a><a href="#training-day">當日</a><a href="#movement">人體圖</a><a href="#progress">進展</a><a href="#composition">InBody</a>
+      </nav>
       <section id="entry" class="workspace" aria-label="記錄訓練">
         <div class="sync-line">
           <span id="sync-status" role="status">正在開啟手機資料…</span
@@ -82,9 +85,7 @@
           </button>
         </div>
       </section>
-      <nav class="dashboard-nav" aria-label="訓練概覽導覽">
-        <a href="#entry">總覽</a><a href="#movement">人體圖</a><a href="#progress">進展</a><a href="#composition">InBody</a>
-      </nav>
+      <section id="training-day" class="training-day" aria-label="當日紀錄與部位摘要"></section>
       <div id="dashboard"></div>
       <section id="history" class="history" aria-label="紀錄清單"></section>
     </main>

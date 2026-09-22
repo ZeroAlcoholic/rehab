@@ -1,47 +1,35 @@
 import { equipmentShortcuts } from "../domain/equipment-shortcuts.js";
-import { el } from "./dom.js";
+import { BODY_REGIONS, MUSCLE_ROLES } from "../domain/muscles.js";
+import { el, field, select, button } from "./dom.js";
+import { exerciseIllustration } from './exercise-illustration.js';
+import { setStrip, weightBasisLabel } from './training-sets.js';
+import { trainingReviewLabel } from './record-quality.js';
 
 const PRIMARY_LIMIT = 6;
 
-function setSummary(data, metric) {
-  const groups = [];
-  for (const set of data.sets) {
-    const previous = groups.at(-1);
-    if (previous?.load === set.load) previous.reps.push(set.reps);
-    else groups.push({ load: set.load, reps: [set.reps] });
-  }
-  return groups
-    .map(({ load, reps }) => {
-      const amount =
-        load === null
-          ? "自體重量"
-          : `${metric === "assistance" ? "輔助 " : ""}${load} ${data.unit}`;
-      return `${amount} · ${reps.join(" / ")}`;
-    })
-    .join("　");
-}
-
 function shortcutButton(shortcut, onSelect) {
+  const reviewLabel = trainingReviewLabel(Object.keys(shortcut.record.data.review ?? {}));
   return el(
     "button",
     {
       type: "button",
       class: "equipment-shortcut",
       onClick: () => onSelect(shortcut.record),
-      "aria-label": `記錄 ${shortcut.name}，${shortcut.machine}`,
+      "aria-label": `記錄 ${shortcut.name}，${shortcut.machine}，${weightBasisLabel(shortcut.record.data)}${shortcut.metric === 'bodyweight' ? '' : ` ${shortcut.unit}`}${reviewLabel ? `，${reviewLabel}` : ''}`,
     },
-    el("strong", {}, shortcut.name),
-    el("span", { class: "equipment-name" }, shortcut.machine),
-    el(
-      "span",
-      { class: "equipment-last" },
-      `上次 ${setSummary(shortcut.record.data, shortcut.metric)}`,
-    ),
-    el("small", {}, shortcut.record.data.date),
+    el('span', {class:'equipment-identity'}, exerciseIllustration(shortcut.record.data.exerciseId),
+      el('span', {}, el('strong', {}, shortcut.name), el('span', {class:'equipment-name'}, shortcut.machine))),
+    el('span', {class:'equipment-card-meta'}, el("small", {}, `前次 ${shortcut.record.data.date}`),
+      el('span', {class:'equipment-action','aria-hidden':'true'}, '記錄 ›')),
+    setStrip(shortcut.record.data),
+    reviewLabel ? el('span',{class:'equipment-review'},reviewLabel) : null,
   );
 }
 
-export function renderEquipmentShortcuts(container, records, { onSelect }) {
+export function renderEquipmentShortcuts(container, records, { onSelect, regionId }) {
+  const previousSearch = container.querySelector('[type="search"]')?.value ?? "";
+  const previousRegion = container.querySelector('select')?.value ?? "";
+  const wasFiltering = container.querySelector('.equipment-search')?.open ?? false;
   const shortcuts = equipmentShortcuts(records);
   if (!shortcuts.length) {
     container.replaceChildren(
@@ -53,22 +41,44 @@ export function renderEquipmentShortcuts(container, records, { onSelect }) {
     );
     return;
   }
-  const primary = shortcuts.slice(0, PRIMARY_LIMIT);
-  const additional = shortcuts.slice(PRIMARY_LIMIT);
-  const more = additional.length
-    ? el(
-        "details",
-        { class: "equipment-more" },
-        el("summary", {}, `其他已記錄器材（${additional.length}）`),
-        el(
-          "div",
-          { class: "equipment-more-grid" },
-          additional.map((shortcut) => shortcutButton(shortcut, onSelect)),
-        ),
-      )
-    : null;
+  const search = el('input', {type:'search', value:regionId !== undefined ? '' : previousSearch,
+    placeholder:'動作、機台名稱或位置', 'aria-label':'搜尋已記錄器材'});
+  const region = select([['','全部部位'], ...BODY_REGIONS.map(r=>[r.id,r.name])], regionId ?? previousRegion,
+    {'aria-label':'依訓練部位找器材'});
+  const results = el('div', {class:'equipment-results'});
+  const count = el('p', {class:'equipment-count', role:'status'});
+  function draw() {
+    const terms = search.value.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    const filtered = shortcuts.filter(shortcut => {
+      const roles = MUSCLE_ROLES[shortcut.record.data.exerciseId];
+      const matchesRegion = !region.value || roles?.primary.includes(region.value) || roles?.support.includes(region.value);
+      const text = `${shortcut.name} ${shortcut.machine} ${shortcut.unit}`.toLocaleLowerCase();
+      return matchesRegion && terms.every(term => text.includes(term));
+    });
+    const filtering = terms.length || region.value;
+    const primary = filtering ? filtered : filtered.slice(0, PRIMARY_LIMIT);
+    const additional = filtering ? [] : filtered.slice(PRIMARY_LIMIT);
+    const children = primary.map(shortcut => shortcutButton(shortcut, onSelect));
+    if (additional.length) children.push(el(
+      'details', {class:'equipment-more'},
+      el('summary', {}, `其他已記錄器材（${additional.length}）`),
+      el('div', {class:'equipment-more-grid'}, additional.map(shortcut => shortcutButton(shortcut, onSelect))),
+    ));
+    if (!filtered.length) children.push(el(
+      'p', {class:'equipment-empty'}, '沒有符合的已記錄器材，請調整或清除篩選。',
+    ));
+    results.replaceChildren(...children);
+    count.textContent = filtering
+      ? `找到 ${filtered.length} 項器材／動作${region.value ? '（含主要與協同部位）' : ''}`
+      : `最近使用 · 共 ${shortcuts.length} 項器材／動作`;
+  }
+  search.addEventListener('input', draw);
+  region.addEventListener('change', draw);
   container.replaceChildren(
-    ...primary.map((shortcut) => shortcutButton(shortcut, onSelect)),
-    more,
-  );
+    el('details',{class:'equipment-search',open:wasFiltering || Boolean(search.value || region.value)},
+      el('summary',{},'依部位找器材／搜尋'),
+      el('div',{class:'equipment-filters'},field('依訓練部位找器材',region),
+        button('清除篩選',()=>{search.value='';region.value='';draw();region.focus();},{class:'quiet'})),
+      field('搜尋已記錄器材',search)), count, results);
+  draw();
 }

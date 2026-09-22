@@ -41,6 +41,7 @@ try:
   page.locator('[data-exercise-id="chest_press"] > summary').click()
   stream=page.locator('#progress .body-stream').filter(has_text='胸推 A')
   stream.get_by_role('button',name='再記一次',exact=True).click()
+  page.get_by_text('日期與器材設定',exact=True).click()
   assert page.get_by_label('機台／場地識別').input_value()=='胸推 A'
   assert page.get_by_role('combobox',name='單位',exact=True).input_value()=='kg'
   assert page.get_by_label('第 1 組重量').input_value()=='30'
@@ -74,7 +75,7 @@ try:
   assert '立即就醫' in page.locator('.rehab-alert').inner_text()
   page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');const s=createService(await openRepository());for(let i=0;i<7;i++)await s.save('training',{date:`2026-09-${String(17+i).padStart(2,'0')}`,exerciseId:'leg_extension',machine:`腿伸展 ${i}`,unit:'lb',sets:[{load:40,reps:10}],pain:'unknown',technique:'unknown',note:''});}""")
   page.reload()
-  assert page.locator('#equipment-shortcuts > .equipment-shortcut').count()==6
+  assert page.locator('#equipment-shortcuts .equipment-results > .equipment-shortcut').count()==6
   assert page.locator('.equipment-more').count()==1
   page.locator('.equipment-more > summary').click()
   assert page.locator('.equipment-more .equipment-shortcut').count()>=1

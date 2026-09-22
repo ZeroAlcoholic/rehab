@@ -1,5 +1,10 @@
 import { el, field, select } from "./dom.js";
 import { INBODY_FIELDS } from "../domain/catalog.js";
+export function trainingReviewLabel(keys = []) {
+  const labels = {machine:'機台',unit:'單位',posture:'姿勢',sets:'組數',load:'重量'};
+  const names = keys.map(key => labels[key]).filter(Boolean);
+  return names.length ? `${names.join('、')}待核對` : '';
+}
 export function qualityEditor(kind, data = {}) {
   const keys =
     kind === "inbody"
@@ -77,6 +82,8 @@ export function qualityEditor(kind, data = {}) {
     element.append(field("負荷記錄方式", basis), field("姿勢條件", posture));
   return {
     element,
+    reviewKeys: () => rows.filter(row=>row.input.checked).map(row=>row.id),
+    context: () => ({loadBasis: basis.value, posture: posture.value.trim()}),
     value() {
       const result = {};
       if (data.source) result.source = data.source;

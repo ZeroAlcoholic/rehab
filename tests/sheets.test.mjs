@@ -570,6 +570,18 @@ test("auth request timeout settles without accepting a late token", async () => 
   assert.equal(auth.isConnected(), false);
 });
 
+test('auth retains known OAuth failure categories without echoing untrusted response details', async () => {
+  for(const code of ['access_denied','invalid_client','unauthorized_client','origin_mismatch','redirect_uri_mismatch','disallowed_useragent']) {
+    const gis=identity();
+    const auth=createAuth({getGoogle:()=>gis.google});
+    await auth.prepare(CLIENT);
+    const pending=auth.connect(CLIENT);
+    gis.configs[0].callback({error:code,error_description:'PRIVATE_DETAILS',access_token:'PRIVATE_TOKEN'});
+    await assert.rejects(pending,error=>error.code==='auth' && error.message.includes(code) && !error.message.includes('PRIVATE'));
+    assert.equal(auth.isConnected(),false);
+  }
+});
+
 test("GIS script is loaded only on prepare and a load failure permits a fresh attempt", async () => {
   let google;
   const scripts = [];

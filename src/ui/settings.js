@@ -15,6 +15,7 @@ export function openSettings({
 }) {
   const view = modal("資料設定");
   let bound = Boolean(settings.sheetId);
+  let authorizing = false, prepared = false, cloudConnected = connected;
   const effectiveClientId = settings.clientId || defaultClientId;
   const clientId = el("input", {
     type: "text",
@@ -32,10 +33,12 @@ export function openSettings({
     "連線 Google",
     () =>
       run(connect, async () => {
+        enableCloud(false);
+        status.textContent = '請在 Google 登入視窗完成授權，再回到這裡。';
         await onConnect(clientId.value.trim());
         status.textContent = "Google 已連線";
         enableCloud(true);
-      }),
+      }, {authorization:true}),
     { class: "primary", disabled: true },
   );
   const create = button(
@@ -76,27 +79,51 @@ export function openSettings({
     { class: "secondary", disabled: !connected },
   );
   function enableCloud(value) {
+    cloudConnected = value;
     create.disabled = !value || bound;
     list.disabled = !value;
     bind.disabled = !value;
   }
-  async function run(control, action) {
+  async function run(control, action, {authorization = false} = {}) {
+    if (authorizing) return;
+    const locked = authorization ? [...view.dialog.querySelectorAll('button,input,select,textarea')]
+      .map(node=>({node,disabled:node.disabled})) : [];
+    const preventClose = event => {event.preventDefault();event.stopImmediatePropagation();};
+    if (authorization) {
+      authorizing = true;
+      locked.forEach(({node})=>{node.disabled=true;});
+      view.dialog.addEventListener('cancel',preventClose,true);
+    }
     control.disabled = true;
     view.error.textContent = "";
     try {
       await action();
     } catch (error) {
       view.error.textContent = error.message;
+      if (authorization) status.textContent = 'Google 連線未完成，請查看下方原因。';
+      view.error.tabIndex = -1;
+      view.error.focus();
     } finally {
+      if (authorization) {
+        authorizing = false;
+        locked.forEach(({node,disabled})=>{node.disabled=disabled;});
+        view.dialog.removeEventListener('cancel',preventClose,true);
+        enableCloud(cloudConnected);
+      }
       control.disabled = control === create && bound;
+      if (control === connect) connect.disabled = !prepared;
     }
   }
   const prepare = button(
     "儲存設定並準備授權",
     () =>
       run(prepare, async () => {
+        const requestedId = clientId.value.trim();
         connect.disabled = true;
-        await onPrepare(clientId.value.trim());
+        prepared = false;
+        await onPrepare(requestedId);
+        if (clientId.value.trim() !== requestedId) return;
+        prepared = true;
         connect.disabled = false;
         status.textContent = "已準備，可按連線 Google。";
       }),
@@ -141,6 +168,13 @@ export function openSettings({
       }
     },
   });
+  clientId.addEventListener('input',()=>{
+    prepared = false;
+    connect.disabled = true;
+    onDisconnect();
+    enableCloud(false);
+    status.textContent = '設定已變更，請先按「儲存設定並準備授權」。';
+  });
   view.body.append(
     el("h3", {}, "Google 連線"),
     el(
@@ -166,6 +200,7 @@ export function openSettings({
       { class: "quiet" },
     ),
     status,
+    view.error,
     el("h3", {}, "私人試算表"),
     settings.sheetId
       ? el(
@@ -194,6 +229,8 @@ export function openSettings({
   if (effectiveClientId)
     run(prepare, async () => {
       await onPrepare(effectiveClientId);
+      if (clientId.value.trim() !== effectiveClientId) return;
+      prepared = true;
       connect.disabled = false;
     }).catch(() => {});
 }

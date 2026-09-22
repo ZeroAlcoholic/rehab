@@ -50,17 +50,30 @@ export function modal(title) {
   dialog.showModal();
   return { dialog, body, error, close: () => dialog.close() };
 }
+const submitting = new WeakSet();
 export async function submit(dialog, action) {
-  const controls = [...dialog.dialog.querySelectorAll("button")];
-  controls.forEach((b) => (b.disabled = true));
+  if (submitting.has(dialog.dialog)) return;
+  submitting.add(dialog.dialog);
+  const controls = [...dialog.dialog.querySelectorAll('button,input,select,textarea')]
+    .map(control => ({control, disabled: control.disabled}));
+  const preventClose = event => {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  };
+  dialog.dialog.addEventListener('cancel', preventClose, true);
+  controls.forEach(({control}) => (control.disabled = true));
   dialog.error.textContent = "";
   try {
     await action();
     dialog.close();
   } catch (error) {
     dialog.error.textContent = error.message;
+    dialog.error.tabIndex = -1;
+    dialog.error.focus();
   } finally {
-    controls.forEach((b) => (b.disabled = false));
+    controls.forEach(({control, disabled}) => (control.disabled = disabled));
+    dialog.dialog.removeEventListener('cancel', preventClose, true);
+    submitting.delete(dialog.dialog);
   }
 }
 export const localDate = (date = new Date()) =>

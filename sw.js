@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v15-equipment-entry";
+const VERSION = "rehab-shell-v26-auth-state";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
@@ -13,6 +13,10 @@ const files = [
   "./icons/icon-512.png",
   "./icons/maskable-512.png",
   "./src/main.js",
+  "./src/domain/training-day.js",
+  "./src/ui/training-day.js",
+  "./src/ui/exercise-illustration.js",
+  "./src/ui/training-sets.js",
   "./src/domain/catalog.js",
   "./src/domain/records.js",
   "./src/domain/journal.js",
@@ -82,7 +86,10 @@ self.addEventListener('message', event => {
   })());
 });
 self.addEventListener("install", (event) =>
-  event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(files))),
+  // A new shell must fetch current assets, even when HTTP cache entries are fresh.
+  event.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(
+    files.map(file => new Request(new URL(file, self.registration.scope), {cache:'reload'})),
+  ))),
 );
 // A new shell waits until all old tabs close; avoid mixing old UI and new modules.
 self.addEventListener("activate", (event) =>

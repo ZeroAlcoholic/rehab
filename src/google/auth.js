@@ -1,5 +1,16 @@
 const SCOPE = "https://www.googleapis.com/auth/drive.file";
 const fail = (message) => Object.assign(new Error(message), { code: "auth" });
+function authorizationError(code) {
+  const reasons = {
+    access_denied:'Google 拒絕授權（access_denied）。若未取消授權，請確認帳號是否在測試使用者名單或受管理員限制。',
+    invalid_client:'Google 用戶端設定不正確（invalid_client），請核對網站的 Client ID。',
+    unauthorized_client:'Google 不允許此用戶端授權（unauthorized_client），請核對 Cloud 設定。',
+    origin_mismatch:'網站來源未獲 Google 允許（origin_mismatch），請核對 Authorized JavaScript origins。',
+    redirect_uri_mismatch:'Google 回傳網址設定不符（redirect_uri_mismatch），請核對 OAuth 設定。',
+    disallowed_useragent:'Google 不支援目前的內嵌瀏覽器（disallowed_useragent），請用 Chrome 開啟同一個正式網址。',
+  };
+  return fail(typeof code === 'string' && Object.hasOwn(reasons,code) ? reasons[code] : 'Google 授權失敗，請查看 Google 視窗中的錯誤說明後重試。');
+}
 
 /** Call prepare from settings, then connect directly inside the user's click handler. */
 export function createAuth({
@@ -106,9 +117,9 @@ export function createAuth({
           include_granted_scopes: false,
           callback(response) {
             if (pending !== request) return;
+            if (response?.error) { request.finish(authorizationError(response.error)); return; }
             const seconds = Number(response?.expires_in);
             if (
-              response?.error ||
               typeof response?.access_token !== "string" ||
               !response.access_token ||
               !Number.isFinite(seconds) ||
@@ -128,7 +139,9 @@ export function createAuth({
               fail(
                 error?.type === "popup_closed"
                   ? "Google 授權視窗已關閉，可再按連線。"
-                  : "無法開啟 Google 授權，請允許彈出視窗後重試。",
+                  : error?.type === 'popup_failed_to_open'
+                    ? "無法開啟 Google 授權（popup_failed_to_open），請允許本站彈出視窗後重試。"
+                    : "Google 登入視窗發生錯誤，請關閉該視窗後重試。",
               ),
             );
           },

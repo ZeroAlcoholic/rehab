@@ -15,6 +15,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
  def do_GET(self):
   path=self.path.split('?')[0]
+  if legacy and path=='/src/ui/body-drawing.js':
+   content=((ROOT/'src/ui/body-drawing.js').read_text(encoding='utf-8')+'\n// legacy-http-cache-fixture').encode('utf-8')
+   self.send_response(200);self.send_header('Content-Type','text/javascript');self.send_header('Cache-Control','max-age=86400');self.send_header('Content-Length',str(len(content)));self.end_headers();self.wfile.write(content);return
   if fail_update and not legacy and path=='/sw.js':
    self.send_error(503,'temporary fixture failure');return
   if legacy and path in ['/sw.js','/src/domain/journal.js']:
@@ -37,6 +40,7 @@ try:
    page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');await createService(await openRepository()).save('training',{date:'2026-09-16',exerciseId:'chest_press',machine:'unsynced A',unit:'kg',sets:[{load:20,reps:12}],pain:'unknown',technique:'unknown',note:'keep me'});}""")
    cached=page.evaluate("fetch('./src/domain/journal.js').then(r=>r.text())")
    assert '["training", "inbody"].includes' in cached
+   assert 'legacy-http-cache-fixture' in page.evaluate("fetch('./src/ui/body-drawing.js').then(r=>r.text())")
    other=None
    if keep_tab:
     other=ctx.new_page();other.goto(base+'/');other.locator('#record').click()
@@ -60,6 +64,7 @@ try:
     assert other.evaluate("async()=>{const {openRepository}=await import('./src/storage/repository.js');return (await (await openRepository()).read()).events.length;}")==1
     other.close();page.locator('#retry').click()
    page.wait_for_url('**/?range=0');page.locator('#rehab-panel').wait_for()
+   assert 'legacy-http-cache-fixture' not in page.evaluate("fetch('./src/ui/body-drawing.js').then(r=>r.text())"),'New shell must not reuse a fresh but obsolete HTTP asset'
    state=page.evaluate("async()=>{const {openRepository}=await import('./src/storage/repository.js');return (await (await openRepository()).read());}")
    assert len(state['events'])>1 and len(state['pending'])==len(state['events'])
    assert any(e['data'].get('note')=='keep me' for e in state['events'])

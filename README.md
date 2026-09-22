@@ -4,7 +4,10 @@ Android 優先的個人訓練與 InBody 紀錄。純靜態網頁，資料先存�
 
 ## 目前可使用
 
-- 首頁依最近使用排序顯示 6 台器材，其餘器材收合；點器材即帶入同動作、同機台、單位、重量與組數，只填本次實際次數。另可新增、修改、刪除，或在歷史按「再練一次」。
+- 首頁依最近使用排序顯示 6 項器材／動作，其餘收合；可點選部位篩選，人體圖也可直接帶入部位，文字搜尋為備用。篩選涵蓋全部已記錄器材，不受概覽日期範圍限制。
+- 點器材或歷史「再練一次」共用記錄表單：帶入重量，每組顯示參考日期對應的前次數值，本次次數留白，可逐組點「同前次」。日期與器材設定預設收合；重量／次數使用原生數字輸入提示。有變更未儲存時，關閉前提示捨棄；不提供跨重整草稿恢復。
+- 當日紀錄可直接核對、修改，預設今天，可點選其他日期，不受概覽期間影響。顯示已記錄組數及主要／協同部位，沿用人體圖的動作對應；部位組數不可相加，也不代表實際刺激或訓練足夠。暖身／排除、待核對與版本衝突會明示。
+- 表單顯示已填組數，儲存期間鎖定輸入並防止重複送出；失敗後保留輸入並恢復原本操作狀態。
 - InBody 手動輸入、選填台灣時間／機型／量測條件；常用四欄優先，其餘報告欄位展開填寫。支援不定期間隔，保留完整歷史、前次差值與間隔天數。
 - InBody 不受訓練篩選範圍影響；逐欄待核對與排除值仍保留，但不計入變化。沒有的項目留白，不沿用前次數值。
 - 六段概覽、日期範圍、動作明細、逐組訓練量與 InBody 歷史。
@@ -58,7 +61,12 @@ Node 24 僅用於開發／CI；使用者的手機不需要它。
 ```powershell
 node --test tests/*.test.mjs
 node scripts/check-boundaries.mjs
+& 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/gym_entry_check.py
+& 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/training_day_check.py
+& 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/visual_training_check.py
+& 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/submit_recovery_check.py
 & 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/browser_check.py
+& 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/settings_auth_check.py
 & 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/body_map_check.py
 & 'C:\Programs\miniforge3\envs\deve\python.exe' -X utf8 tests/atlas_ux_check.py
 ```
