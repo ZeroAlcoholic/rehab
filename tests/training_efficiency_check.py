@@ -60,7 +60,7 @@ try:
         state=page.evaluate(READ)
         assert len(state['records'])==2 and all(e in state['events'] for e in original)
         # Imported machine identity and review metadata survive editing unchanged.
-        page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');const {localDate}=await import('./src/ui/dom.js');await createService(await openRepository()).save('training',{date:localDate(),exerciseId:'lat_pulldown',machine:'測試滑輪（型號待核對）',unit:'kg',sets:[{load:30,reps:8}],review:{machine:'型號待核對',posture:'姿勢待確認'},source:'舊資料待核對',pain:'unknown',technique:'unknown',note:'座椅 3'});}""")
+        page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');const {localDate}=await import('./src/ui/dom.js');await createService(await openRepository()).save('training',{date:localDate(),exerciseId:'lat_pulldown',machine:'測試滑輪（型號待核對）',unit:'kg',sets:[{load:30,reps:8}],review:{machine:'型號待核對',posture:'姿勢待確認'},source:'舊資料待核對',posture:'實際拉法待核對',pain:'unknown',technique:'unknown',note:'座椅 3；姿式待核對。'});}""")
         page.reload()
         before=page.evaluate(READ)
         record=page.locator('.day-record').filter(has_text='測試滑輪')
@@ -70,6 +70,9 @@ try:
         page.get_by_text('日期與器材設定',exact=True).click()
         assert page.get_by_label('機台／場地識別').input_value()=='測試滑輪'
         page.get_by_text('更多設定',exact=True).click()
+        assert page.get_by_label('姿勢條件',exact=True).input_value()==''
+        page.get_by_text('感受與備註（選填）',exact=True).click()
+        assert page.get_by_label('備註',exact=True).input_value()=='座椅 3。'
         assert '待核對' not in page.locator('dialog[open]').inner_text()
         assert '待確認' not in page.locator('dialog[open]').inner_text()
         assert page.get_by_role('checkbox',name='機台待核對',exact=True).count()==0
@@ -87,9 +90,26 @@ try:
         saved=next(r['data'] for r in after['records'] if r['data'].get('exerciseId')=='lat_pulldown')
         assert saved['machine']=='測試滑輪（型號待核對）'
         assert saved['review']=={'machine':'型號待核對','posture':'姿勢待確認'}
+        assert saved['posture']=='實際拉法待核對' and saved['note']=='座椅 3；姿式待核對。'
         assert saved['source']=='舊資料待核對' and saved['sets']==[{'load':30,'reps':9}]
         assert all(e in after['events'] for e in before['events'])
         page.reload();assert page.evaluate(READ)['events']==after['events']
+        page.evaluate("""async()=>{const {openRepository}=await import('./src/storage/repository.js');const {createService}=await import('./src/app/service.js');await createService(await openRepository()).save('inbody',{date:'2026-01-02',metrics:{weight:70},note:'量測 70 kg；型號待核對。',source:'型號待核對',measurementContext:{device:'測試機（型號待核對）',conditions:'早上；姿勢待核對。'}});}""")
+        page.reload()
+        page.locator('.history-archive > summary').click()
+        page.locator('#history .record').filter(has_text='InBody').get_by_role('button',name='修改',exact=True).click()
+        assert page.get_by_label('備註',exact=True).input_value()=='量測 70 kg。'
+        assert page.get_by_label('量測機型／地點（選填）',exact=True).input_value()=='測試機'
+        assert page.get_by_label('量測條件（選填）',exact=True).input_value()=='早上。'
+        page.get_by_label('體重（kg）',exact=True).fill('71')
+        page.get_by_role('button',name='儲存 InBody',exact=True).click()
+        page.locator('dialog[open]').wait_for(state='hidden')
+        measured=next(r['data'] for r in page.evaluate(READ)['records'] if r['kind']=='inbody')
+        assert measured['note']=='量測 70 kg；型號待核對。'
+        assert measured['measurementContext']=={'device':'測試機（型號待核對）','conditions':'早上；姿勢待核對。'}
+        assert measured['metrics']['weight']==71
+        page.locator('.body-report-notes > summary').click()
+        assert '待核對' not in page.locator('.body-report-notes').inner_text()
         assert not errors,errors
         (ROOT/'artifacts').mkdir(exist_ok=True)
         page.locator('.equipment-shortcut').first.click()

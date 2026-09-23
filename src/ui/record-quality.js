@@ -1,7 +1,16 @@
 import { el, field, select } from "./dom.js";
-// Display only: keep original machine identity in saved data and comparison keys.
+// Presentation only; edited fields retain the original value when left unchanged.
+export function displayRecordText(text = '') {
+  const cleaned = text
+    .replace(/(?:既有)?(?:實際拉法|姿勢|姿式|型號|機型|機台|握法)?待(?:核對|確認)(?:仍保留)?/gu, '')
+    .replace(/[（(]\s*[）)]/gu, '')
+    .replace(/[，,、／/]\s*(?=[。；;\n]|$)/gu, '')
+    .replace(/[；;。]\s*。/gu, '。')
+    .trim();
+  return /^[\s，,。；;、／/]*$/u.test(cleaned) ? '' : cleaned;
+}
 export function machineDisplayName(machine = '') {
-  return machine.replace(/\s*[（(](?:型號|機型|機台|姿勢|姿式)待(?:核對|確認)[）)]\s*$/u, '').trim() || '未指定機台';
+  return displayRecordText(machine) || '未指定機台';
 }
 export function qualityEditor(kind, data = {}) {
   const excluded = el("input", {
@@ -27,10 +36,11 @@ export function qualityEditor(kind, data = {}) {
   );
   const posture = el("input", {
     type: "text",
-    value: data.posture ?? "",
+    value: displayRecordText(data.posture ?? ""),
     maxlength: 2000,
     placeholder: "握法、座椅或動作條件",
   });
+  const postureValue = () => posture.value === displayRecordText(data.posture ?? '') ? (data.posture ?? '') : posture.value.trim();
   const element = el(
     "details",
     { class: "record-quality-editor" },
@@ -42,7 +52,7 @@ export function qualityEditor(kind, data = {}) {
     element.append(field("負荷記錄方式", basis), field("姿勢條件", posture));
   return {
     element,
-    context: () => ({loadBasis: basis.value, posture: posture.value.trim()}),
+    context: () => ({loadBasis: basis.value, posture: postureValue()}),
     value() {
       const result = {};
       if (data.source) result.source = data.source;
@@ -53,7 +63,7 @@ export function qualityEditor(kind, data = {}) {
       }
       if (kind === "training") {
         if (basis.value) result.loadBasis = basis.value;
-        if (posture.value.trim()) result.posture = posture.value.trim();
+        if (postureValue()) result.posture = postureValue();
       }
       return result;
     },

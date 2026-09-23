@@ -1,3 +1,4 @@
+import { displayRecordText } from './record-quality.js';
 import { el } from "./dom.js";
 const CORE = [
   "weight",
@@ -216,10 +217,10 @@ export function renderBodyComposition(analysis) {
         "article",
         {},
         el("h4", {}, `${r.data.date}${r.data.time ? ` ${r.data.time}（台灣時間）` : ""}`),
-        el("p",{class:"muted"},r.data.measurementContext?.device || "未記錄量測機型／地點"),
-        el("p",{class:"source-text"},r.data.measurementContext?.conditions || "未記錄量測條件"),
-        el("p", { class: "muted" }, r.data.source ?? "手動記錄"),
-        el("p", { class: "source-text" }, r.data.note || "未提供量測條件"),
+        el("p",{class:"muted"},displayRecordText(r.data.measurementContext?.device) || "未記錄量測機型／地點"),
+        el("p",{class:"source-text"},displayRecordText(r.data.measurementContext?.conditions) || "未記錄量測條件"),
+        displayRecordText(r.data.source) ? el("p", { class: "muted" }, displayRecordText(r.data.source)) : null,
+        el("p", { class: "source-text" }, displayRecordText(r.data.note) || "未提供量測條件"),
       ),
     ),
   );

@@ -1,4 +1,4 @@
-import { qualityEditor, machineDisplayName } from "./record-quality.js";
+import { qualityEditor, machineDisplayName, displayRecordText } from "./record-quality.js";
 import { EXERCISES } from "../domain/catalog.js";
 import { exerciseIllustration } from './exercise-illustration.js';
 import { weightBasisLabel } from './training-sets.js';
@@ -79,7 +79,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
       maxlength: 10000,
       placeholder: "例如：最後一組手肘外開",
     },
-    initial.note,
+    displayRecordText(initial.note),
   );
   const rows = el("div", { class: "set-list" }),
     hint = el("p", { class: "muted" });
@@ -261,7 +261,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
         })),
         pain: pain.value,
         technique: technique.value,
-        note: note.value,
+        note: note.value === displayRecordText(initial.note) ? initial.note : note.value,
       }),
     );
   });

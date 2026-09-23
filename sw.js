@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v31-fast-entry";
+const VERSION = "rehab-shell-v32-remove-legacy-prompts";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [

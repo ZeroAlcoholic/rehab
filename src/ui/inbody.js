@@ -1,4 +1,4 @@
-import { qualityEditor } from "./record-quality.js";
+import { qualityEditor, displayRecordText } from "./record-quality.js";
 import { INBODY_FIELDS } from "../domain/catalog.js";
 import { el, field, modal, submit, localDate, numberInput } from "./dom.js";
 
@@ -12,8 +12,8 @@ export function openInbody({ data = null, editing = false, onSave }) {
     value: data?.date ?? localDate(),
   });
   const time = el("input", {type:"time", value:data?.time ?? ""});
-  const device = el("input", {type:"text",maxlength:2000,value:data?.measurementContext?.device ?? "",placeholder:"例如：A 館 InBody 270"});
-  const conditions = el("textarea", {"aria-label":"量測條件（選填）",rows:2,maxlength:2000}, data?.measurementContext?.conditions ?? "");
+  const device = el("input", {type:"text",maxlength:2000,value:displayRecordText(data?.measurementContext?.device ?? ""),placeholder:"例如：A 館 InBody 270"});
+  const conditions = el("textarea", {"aria-label":"量測條件（選填）",rows:2,maxlength:2000}, displayRecordText(data?.measurementContext?.conditions ?? ""));
   const controls = [...INBODY_FIELDS]
     .sort((a, b) => Number(!!a.optional) - Number(!!b.optional))
     .map((f) => ({
@@ -28,7 +28,7 @@ export function openInbody({ data = null, editing = false, onSave }) {
       maxlength: 10000,
       placeholder: "量測條件、報告上的其他項目",
     },
-    data?.note ?? "",
+    displayRecordText(data?.note ?? ""),
   );
   const core = new Set(["weight", "skeletal_muscle_mass", "body_fat_mass", "body_fat_percentage"]);
   const inputs = (items) => items.map(({field:f,input})=>field(`${f.label}${f.unit ? `（${f.unit}）` : ""}`, input));
@@ -58,14 +58,14 @@ export function openInbody({ data = null, editing = false, onSave }) {
         ...quality.value(),
         date: date.value,
         ...(time.value || data?.time !== undefined ? {time:time.value} : {}),
-        ...(device.value || conditions.value || data?.measurementContext !== undefined ? {measurementContext:{device:device.value,conditions:conditions.value}} : {}),
+        ...(device.value || conditions.value || data?.measurementContext !== undefined ? {measurementContext:{device:device.value === displayRecordText(data?.measurementContext?.device ?? '') ? (data?.measurementContext?.device ?? '') : device.value,conditions:conditions.value === displayRecordText(data?.measurementContext?.conditions ?? '') ? (data?.measurementContext?.conditions ?? '') : conditions.value}} : {}),
         metrics: Object.fromEntries(
           controls.map(({ field: f, input }) => [
             f.id,
             input.value === "" ? null : Number(input.value),
           ]),
         ),
-        note: note.value,
+        note: note.value === displayRecordText(data?.note ?? '') ? (data?.note ?? '') : note.value,
       }),
     );
   });

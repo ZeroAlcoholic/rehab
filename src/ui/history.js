@@ -1,4 +1,4 @@
-import { machineDisplayName } from './record-quality.js';
+import { machineDisplayName, displayRecordText } from './record-quality.js';
 import { EXERCISES, INBODY_FIELDS } from "../domain/catalog.js";
 import { el, button, formatDate } from "./dom.js";
 import {LOCATIONS,PLAN_STATUS,TRIGGERS,RED_FLAGS} from '../domain/rehab.js';
@@ -49,7 +49,7 @@ export function renderHistory(
               ? "刪除此筆紀錄"
               : `${formatDate(version.data.date)} · ${describeRecord(version.kind, version.data)}`,
           ),
-          version.data?.note ? el("p", {}, version.data.note) : null,
+          version.data?.note ? el("p", {}, displayRecordText(version.data.note)) : null,
           version.kind === "training" && !version.deleted
             ? el(
                 "p",
@@ -96,9 +96,9 @@ export function renderHistory(
               )
             : null,
           record.data.note
-            ? el("p", { class: "muted" }, record.data.note)
+            ? el("p", { class: "muted" }, displayRecordText(record.data.note))
             : null,
-          record.data.measurementContext ? el("p",{class:"muted"},[record.data.measurementContext.device,record.data.measurementContext.conditions].filter(Boolean).join(" · ")) : null,
+          record.data.measurementContext ? el("p",{class:"muted"},[record.data.measurementContext.device,record.data.measurementContext.conditions].map(value=>displayRecordText(value)).filter(Boolean).join(" · ")) : null,
           ),
         ),
         el(

@@ -1,4 +1,4 @@
-import { machineDisplayName } from './record-quality.js';
+import { machineDisplayName, displayRecordText } from './record-quality.js';
 import { el } from "./dom.js";
 import { PROGRESS_LABELS } from "../domain/body-insights.js";
 import { EXERCISES } from "../domain/catalog.js";
@@ -34,7 +34,7 @@ export function recordEvidence(record) {
       { class: "body-source-context" },
       context,
     ) : null,
-    d.note ? el("p", { class: "body-source-note" }, d.note) : null,
+    d.note ? el("p", { class: "body-source-note" }, displayRecordText(d.note)) : null,
   );
 }
 export function streamEvidence(stream) {

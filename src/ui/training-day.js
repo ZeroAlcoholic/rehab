@@ -1,4 +1,4 @@
-import { machineDisplayName } from './record-quality.js';
+import { machineDisplayName, displayRecordText } from './record-quality.js';
 import { trainingDay } from '../domain/training-day.js';
 import { el, button, field, select, localDate } from './dom.js';
 import { BODY_REGIONS } from '../domain/muscles.js';
@@ -91,7 +91,7 @@ export function renderTrainingDay(container, records, { onEdit, conflicts = [] }
           el('div', {}, el('strong', {}, EXERCISES.find(e => e.id === record.data.exerciseId)?.name ?? record.data.exerciseId),
             el('p', {class:'muted'}, machineDisplayName(record.data.machine)))),
         setStrip(record.data),
-        record.data.note ? el('details', {class:'day-note'}, el('summary', {}, '備註'), el('p', {}, record.data.note)) : null,
+        record.data.note ? el('details', {class:'day-note'}, el('summary', {}, '備註'), el('p', {}, displayRecordText(record.data.note))) : null,
         record.data.analysisExcludedReason ? el('p', {class:'flag'}, `不納入統計：${record.data.analysisExcludedReason}`) : null,
       ),
       button('修改這筆紀錄', () => onEdit(record), {class:'secondary'}),

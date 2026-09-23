@@ -239,3 +239,10 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 新增 training_efficiency 瀏覽器案例驗證原生輸入提示、鍵盤焦點、一鍵複製與批次填空白、保留手動值、條件切換、補登日期標題與儲存一致、原始身份及 immutable events 保留、320/412/1100px 與 200% 文字。審查發現日期摘要未隨補登日期更新，先重現後修正，案例通過。
 
 99 項 Node 測試、46 模組邊界、visual_training、gym_entry、history_disclosure、training_flow、training_day、longitudinal、browser、public_update、submit_recovery 通過。同步測試使用受控 Google HTTP，手機是 Chrome 尺寸模擬，不等於真實帳戶或 Android 實機驗證。
+
+
+## 舊紀錄提示清理（v32）
+
+2026-09-23：處理舊 machine、posture、note 與 InBody 來源／量測條件中的待核對、待確認文字。僅清理顯示；未編輯的欄位在保存時保留原值，姿勢比較仍採原始條件。新增文字清理測試保留重量、次數、座椅設定與疼痛描述；瀏覽器案例驗證訓練及 InBody 改數值後原始附註不被改寫，展開報告也不顯示殘留提示。
+
+100 項 Node 測試、46 模組邊界及 training_efficiency、gym_entry、history_disclosure、longitudinal、public_update 通過。Chrome 手機尺寸模擬，不代表 Android 實機或真實 Google 帳戶驗證。
