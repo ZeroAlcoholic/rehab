@@ -66,10 +66,7 @@ try:
         assert assisted_card.locator('.equipment-name').inner_text()=='測試輔助'
         assert '待核對' not in assisted_card.inner_text()
         assert '待核對' not in panel.inner_text()
-        assisted.get_by_text('紀錄詳情',exact=True).click()
-        assert '握法待確認' in assisted.inner_text()
-        assert '測試輔助（型號待核對）' in assisted.inner_text()
-        assisted.get_by_text('紀錄詳情',exact=True).click()
+        assert assisted.locator('.record-review-details').count()==0
         assert panel.locator('.day-totals').inner_text().startswith('已記錄')
         assert page.locator('svg [id]').evaluate_all('nodes=>new Set(nodes.map(n=>n.id)).size===nodes.length')
         press.get_by_text('備註',exact=True).click()
@@ -124,13 +121,10 @@ try:
         assert '待核對' not in page.locator('dialog[open]').inner_text()
         assert page.locator('.training-machine').inner_text()=='測試輔助'
         page.get_by_text('日期與器材設定',exact=True).click()
-        assert page.get_by_label('機台／場地識別').input_value()=='測試輔助（型號待核對）'
-        page.get_by_text('紀錄詳情與統計設定',exact=True).click()
-        assert page.get_by_label('姿勢待核對',exact=True).is_visible()
-        assert page.get_by_label('姿勢待核對',exact=True).is_checked()
-        page.get_by_label('姿勢待核對',exact=True).uncheck()
-        assert not page.get_by_label('姿勢待核對',exact=True).is_checked()
-        page.get_by_label('姿勢待核對',exact=True).check()
+        assert page.get_by_label('機台／場地識別').input_value()=='測試輔助'
+        page.get_by_text('更多設定',exact=True).click()
+        assert page.get_by_label('姿勢待核對',exact=True).count()==0
+        assert '待核對' not in page.locator('dialog[open]').inner_text()
         page.get_by_role('button',name='關閉',exact=True).click()
         page.get_by_role('button',name='記錄 V-Squat 槓桿深蹲，測試掛片，掛片重量（不含起始阻力） lb',exact=True).click()
         assert page.locator('.set-row .field').first.inner_text()=='掛片（lb）'

@@ -1,4 +1,4 @@
-import { machineDisplayName, reviewDetails } from './record-quality.js';
+import { machineDisplayName } from './record-quality.js';
 import { el } from "./dom.js";
 import { PROGRESS_LABELS } from "../domain/body-insights.js";
 import { EXERCISES } from "../domain/catalog.js";
@@ -24,7 +24,6 @@ export function recordEvidence(record) {
       { class: "muted" },
       `${d.sets.length} 組 · 總次數 ${d.sets.reduce((n, s) => n + s.reps, 0)}${d.loadBasis === "added_plates" ? " · 掛片總重，未含機台起始阻力" : ""}`,
     ),
-    reviewDetails(d),
     el(
       "p",
       {},

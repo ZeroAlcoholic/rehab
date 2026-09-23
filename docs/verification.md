@@ -230,3 +230,12 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 2026-09-22：快捷卡、訓練表單、當日紀錄與歷史摘要精簡機台名稱附註，核對原因收合於紀錄詳情。原始 machine、review、比較鍵與同步邏輯均保留，不執行資料遷移。
 
 99 項 Node 測試與 46 模組邊界檢查通過；visual_training、gym_entry、training_day、history_disclosure、body_map、longitudinal、public_update 瀏覽器案例通過。新增斷言確認收合／展開及瀏覽前後完整儲存狀態不變、編輯仍顯示原始名稱與核對欄位。更新案例驗證升版前後 IndexedDB 完全相同、其他分頁未儲存內容受保護及離線可用。手機為 Chrome 尺寸模擬；未操作真實 Google 帳戶資料。
+
+
+## 簡化新增與修改（v31）
+
+2026-09-23：沿用前次新增「空白次數同前次」，只填尚未輸入且有對應前次組別的次數；改單位或器材條件後停用。新增「複製上一組」，上一組有效才能操作。數字欄使用原生 numeric／decimal inputmode，Enter 移往下一格而非意外送出。修改表單優先顯示各組；日期與器材設定可展開。移除 review 標籤、勾選項與原始核對原因的 UI，但儲存時保留原始 machine 身份及 review/source，未遷移或刪除既有資料。
+
+新增 training_efficiency 瀏覽器案例驗證原生輸入提示、鍵盤焦點、一鍵複製與批次填空白、保留手動值、條件切換、補登日期標題與儲存一致、原始身份及 immutable events 保留、320/412/1100px 與 200% 文字。審查發現日期摘要未隨補登日期更新，先重現後修正，案例通過。
+
+99 項 Node 測試、46 模組邊界、visual_training、gym_entry、history_disclosure、training_flow、training_day、longitudinal、browser、public_update、submit_recovery 通過。同步測試使用受控 Google HTTP，手機是 Chrome 尺寸模擬，不等於真實帳戶或 Android 實機驗證。

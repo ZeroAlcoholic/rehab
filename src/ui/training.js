@@ -14,6 +14,7 @@ import {
 } from "./dom.js";
 
 export function openTraining({ data = null, reference = null, editing = false, repeating = false, quick = false, onSave }) {
+  quick = quick || editing;
   const view = modal(editing ? "修改訓練" : "記一筆訓練"),
     form = el("form");
   const quality = qualityEditor("training", data ?? {});
@@ -40,9 +41,10 @@ export function openTraining({ data = null, reference = null, editing = false, r
   const machine = el("input", {
     type: "text",
     maxlength: 120,
-    value: initial.machine,
+    value: initial.machine ? machineDisplayName(initial.machine) : '',
     placeholder: "例如：A 館胸推 02",
   });
+  const machineValue = () => machine.value === (initial.machine ? machineDisplayName(initial.machine) : '') ? initial.machine : machine.value;
   const unit = select(
     [
       ["kg", "kg"],
@@ -82,18 +84,41 @@ export function openTraining({ data = null, reference = null, editing = false, r
   const rows = el("div", { class: "set-list" }),
     hint = el("p", { class: "muted" });
   const progress = el('p', {class:'set-progress', role:'status'});
+  const fillPrevious = button('空白次數同前次', () => {
+    if (!matchesReference()) return;
+    capture();
+    sets = sets.map((set, i) => ({...set, reps:set.reps ?? references[i]?.reps ?? null}));
+    drawSets();
+  }, {class:'secondary fill-previous',disabled:true});
+  const duplicate = button('複製上一組', () => {
+    capture();
+    sets.push({...sets.at(-1)});
+    references.push(null);
+    drawSets();
+    rows.lastElementChild.scrollIntoView({block:'nearest'});
+  }, {class:'secondary',disabled:true});
   function updateProgress() {
     const complete = [...rows.children].filter(row =>
       [...row.querySelectorAll('input')].every(input => input.disabled || (input.value !== '' && input.validity.valid)),
     ).length;
+    const lastInputs = [...(rows.lastElementChild?.querySelectorAll('input') ?? [])];
+    duplicate.disabled = !lastInputs.length || lastInputs.some(input => !input.disabled && (input.value === '' || !input.validity.valid));
+    fillPrevious.disabled = !matchesReference() || ![...rows.children].some((row,i) => row.querySelector('[data-reps]').value === '' && references[i]);
     progress.textContent = `已填 ${complete} / ${rows.children.length} 組`;
   }
   form.addEventListener('input', updateProgress);
+  form.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.target.type !== 'number') return;
+    event.preventDefault();
+    const inputs = [...rows.querySelectorAll('input:not(:disabled)')];
+    const next = inputs[inputs.indexOf(event.target) + 1];
+    (next ?? form.querySelector('[type=submit]')).focus();
+  });
   let sets = initial.sets.map((s) => ({ ...s }));
   // Keep the reference attached to its original row when a set is removed.
   let references = sets.map((_, i) => reference?.sets[i] ?? null);
   const matchesReference = () => reference &&
-    exercise.value === reference.exerciseId && machine.value === reference.machine && unit.value === reference.unit &&
+    exercise.value === reference.exerciseId && machineValue() === reference.machine && unit.value === reference.unit &&
     quality.context().loadBasis === (reference.loadBasis ?? '') &&
     quality.context().posture === (reference.posture ?? '');
   const currentMetric = () =>
@@ -119,13 +144,14 @@ export function openTraining({ data = null, reference = null, editing = false, r
         ? "請填輔助重量；同條件下，較少輔助才可能代表進步。"
         : metric === "bodyweight"
           ? (exercise.value==='abdominal_bracing'?"每次自然呼吸算 1 次；不憋氣。":"自體重量動作記錄次數；不以體重計算訓練量。")
-          : "每組可填不同重量。比較進步時，會檢查機台與各組條件。";
+          : "每組可填不同重量。";
     rows.replaceChildren(
       ...sets.map((s, i) => {
         const previous = matchesReference() ? references[i] : null;
         const load = numberInput(s.load, {
           "data-load": "",
           "aria-label": `第 ${i + 1} 組重量`,
+          enterkeyhint: "next",
           required: metric !== "bodyweight",
           disabled: metric === "bodyweight",
         });
@@ -136,6 +162,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
           min: 1,
           step: 1,
           inputmode: "numeric",
+          enterkeyhint: "next",
         });
         return el(
           "div",
@@ -158,8 +185,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
             },
           ),
           previous ? el('div',{class:'set-reference'},
-            el('span',{},`前次 ${previous.load === null ? '自體重量' : `${metric === 'assistance' ? '輔助 ' : ''}${previous.load} ${reference.unit}`} × ${previous.reps}`),
-            button(`同前次 ${previous.reps} 次`,()=>{
+            button(`前次 ${previous.load === null ? '自體重量' : `${metric === 'assistance' ? '輔助 ' : ''}${previous.load} ${reference.unit}`} × ${previous.reps} · 套用次數`,()=>{
               reps.value = previous.reps;
               reps.dispatchEvent(new Event('input',{bubbles:true}));
             },{class:'secondary','aria-label':`第 ${i+1} 組同前次 ${previous.reps} 次`})) : null,
@@ -178,16 +204,15 @@ export function openTraining({ data = null, reference = null, editing = false, r
   const setup = el(
       "div",
       { class: "form-grid" },
-      field("日期", date),
-      field("時間（台灣時間，選填）", time),
       field("動作", exercise),
       field("機台／場地識別", machine),
       field("單位", unit),
     );
-  if (quick) setup.append(hint);
+  const dateSetup = el('div',{class:'form-grid'},field('日期',date),field('時間（台灣時間，選填）',time));
+  if (quick) setup.append(dateSetup, hint);
   const identityContext = () => [
     el('span',{},`${date.value} · ${unit.value}`),
-    reference ? el('span',{},matchesReference() ? `前次 ${reference.date}` : '已變更條件，請確認重量') : null,
+    reference ? el('span',{},matchesReference() ? `前次 ${reference.date}` : '已改用不同條件') : null,
     quality.context().loadBasis === 'added_plates' ? el('span',{},weightBasisLabel({exerciseId:exercise.value,...quality.context()})) : null,
   ];
   form.append(
@@ -196,11 +221,12 @@ export function openTraining({ data = null, reference = null, editing = false, r
       el('div',{},el('strong',{},EXERCISES.find(e=>e.id===initial.exerciseId).name),
         el('p',{class:'training-machine'},machineDisplayName(initial.machine)),
         el('p',{class:'training-context muted'},identityContext())))] : []),
-    quick ? el('details',{class:'training-setup'},el('summary',{},'日期與器材設定'),setup) : setup,
+    ...(!quick ? [setup] : []),
     ...(repeating && !quick ? [el("p", {class:"muted"}, "填本次次數，或逐組點「同前次」。")] : []),
     ...(!quick ? [hint] : []),
+    ...(reference ? [fillPrevious] : []),
     rows,
-    button(
+    el('div',{class:'set-actions'}, duplicate, button(
       "增加一組",
       () => {
         capture();
@@ -209,8 +235,9 @@ export function openTraining({ data = null, reference = null, editing = false, r
         drawSets();
       },
       { class: "secondary" },
-    ),
-    el('details',{class:'training-observations',open:editing && (initial.pain!=='unknown'||initial.technique!=='unknown'||Boolean(initial.note))},
+    )),
+    el('details',{class:'training-setup'},el('summary',{},quick ? '日期與器材設定' : `日期與時間 · ${date.value}`),quick ? setup : dateSetup),
+    el('details',{class:'training-observations'},
       el('summary',{},'感受與備註（選填）'),
       el('div',{class:'form-grid'},field('疼痛',pain),field('動作狀況',technique)),
       field('備註',note)),
@@ -226,7 +253,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
         date: date.value,
         ...(time.value || initial.time !== undefined ? {time: time.value} : {}),
         exerciseId: exercise.value,
-        machine: machine.value,
+        machine: machineValue(),
         unit: unit.value,
         sets: sets.map((s) => ({
           ...s,
@@ -240,6 +267,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
   });
   view.body.append(form);
   function updateIdentity() {
+    if (!quick) form.querySelector('.training-setup > summary').textContent = `日期與時間 · ${date.value}`;
     const identity = form.querySelector('.training-identity');
     if (!identity) return;
     identity.querySelector('svg').replaceWith(exerciseIllustration(exercise.value));

@@ -1013,3 +1013,16 @@ li {
   .body-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .metric-card svg text, .pain-chart text { font-size: var(--text-chart); }
+
+.set-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.set-actions > button { flex:1 1 8rem; }
+
+.training-identity .exercise-illustration { width:64px; height:64px; flex-basis:64px; }
+.set-reference { margin-bottom:4px; }
+.set-reference button { min-height:44px; padding:6px 10px; font-size:var(--text-small); }
+.set-row { padding:6px 0; }
+
+form > .fill-previous { margin-bottom:8px; }
+.set-row:not(:first-child) .field > span { display:none; }
+.set-row:not(:first-child) .set-number { padding-top:0; }
+.set-row:not(:first-child) .quiet { margin-top:0; }

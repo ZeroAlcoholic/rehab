@@ -36,6 +36,7 @@ try:
         first.locator('.record-details > summary').click()
         assert first.get_by_text('完整原始備註 19',exact=True).is_visible()
         first.get_by_role('button',name='修改',exact=True).click()
+        page.get_by_text('感受與備註（選填）',exact=True).click()
         page.get_by_label('備註',exact=True).fill('修改後仍保留內容')
         page.get_by_role('button',name='儲存紀錄',exact=True).click()
         page.locator('dialog[open]').wait_for(state='hidden')

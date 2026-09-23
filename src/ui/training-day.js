@@ -1,4 +1,4 @@
-import { machineDisplayName, reviewDetails } from './record-quality.js';
+import { machineDisplayName } from './record-quality.js';
 import { trainingDay } from '../domain/training-day.js';
 import { el, button, field, select, localDate } from './dom.js';
 import { BODY_REGIONS } from '../domain/muscles.js';
@@ -93,7 +93,6 @@ export function renderTrainingDay(container, records, { onEdit, conflicts = [] }
         setStrip(record.data),
         record.data.note ? el('details', {class:'day-note'}, el('summary', {}, '備註'), el('p', {}, record.data.note)) : null,
         record.data.analysisExcludedReason ? el('p', {class:'flag'}, `不納入統計：${record.data.analysisExcludedReason}`) : null,
-        reviewDetails(record.data),
       ),
       button('修改這筆紀錄', () => onEdit(record), {class:'secondary'}),
     )));

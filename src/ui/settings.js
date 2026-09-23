@@ -196,7 +196,7 @@ export function openSettings({
         bound = result.bound;
         enableCloud(cloudConnected);
         importResult.textContent = `備份已合併：目前共 ${result.recordCount} 筆紀錄，已存入這個瀏覽器。`
-          + (result.conflictCount ? `另有 ${result.conflictCount} 筆版本衝突待核對。` : '')
+          + (result.conflictCount ? `另有 ${result.conflictCount} 筆版本衝突，請選擇保留版本。` : '')
           + (result.pendingCount ? '尚有資料待同步至 Google。' : '');
         viewRecords.hidden = !onViewRecords;
       } catch (error) {

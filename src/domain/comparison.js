@@ -43,7 +43,7 @@ export function compareSessions(previousData, currentData) {
     Object.keys(previous.review ?? {}).length ||
     Object.keys(current.review ?? {}).length
   )
-    return result("insufficient", "紀錄有待核對的機台／單位／條件，暫不比較");
+    return result("insufficient", "目前僅顯示數值，不判定進步");
   if (
     (previous.loadBasis ?? "unknown") !== (current.loadBasis ?? "unknown") ||
     (previous.posture ?? "") !== (current.posture ?? "")

@@ -11,7 +11,7 @@ export function describeRecord(kind, data) {
     return [data.locations.map(id=>LOCATIONS.find(([k])=>k===id)[1]).join('、')||'位置未填',data.score===null?'分數未填':`${data.score}/10`,`放射 ${label(data.radiation)}／麻木 ${label(data.numbness)}／無力 ${label(data.weakness)}`,`歪斜 ${label(data.deviation)} · 偏向 ${label(data.direction)}`,`型態：${data.qualities.join('、')||'未填'}`,`活動：${data.activity||'未填'}`,`訓練：${data.training||'未填'}`,`可能誘因：${data.triggers.map(id=>TRIGGERS.find(([k])=>k===id)[1]).join('、')||'未填'}`,`改善時間：${data.recovery||'未填'} · 隔天仍痛 ${label(data.nextDay)}`,...RED_FLAGS.map(([id,name])=>`${name}：${label(data.redFlags[id])}`)].join('；');
   }
   if (kind === "training")
-    return `${EXERCISES.find((e) => e.id === data.exerciseId)?.name ?? data.exerciseId} · ${data.machine || "未指定機台"}${data.loadBasis === "added_plates" ? " · 掛片總重（起始阻力另計）" : ""} · ${data.sets.map((s) => `${s.load ?? "自重"}${s.load === null ? "" : data.unit} × ${s.reps}`).join(" / ")}`;
+    return `${EXERCISES.find((e) => e.id === data.exerciseId)?.name ?? data.exerciseId} · ${machineDisplayName(data.machine)}${data.loadBasis === "added_plates" ? " · 掛片總重（起始阻力另計）" : ""} · ${data.sets.map((s) => `${s.load ?? "自重"}${s.load === null ? "" : data.unit} × ${s.reps}`).join(" / ")}`;
   return INBODY_FIELDS.filter((f) => data.metrics[f.id] != null)
     .map((f) => `${f.label} ${data.metrics[f.id]}${f.unit}`)
     .join(" · ");
@@ -94,16 +94,6 @@ export function renderHistory(
                 { class: "flag" },
                 `不納入統計：${record.data.analysisExcludedReason}`,
               )
-            : null,
-          Object.keys(record.data.review ?? {}).length
-            ? el(
-                "p",
-                { class: "flag" },
-                `待核對：${Object.values(record.data.review).join("；")}`,
-              )
-            : null,
-          record.data.source
-            ? el("p", { class: "muted" }, `來源：${record.data.source}`)
             : null,
           record.data.note
             ? el("p", { class: "muted" }, record.data.note)

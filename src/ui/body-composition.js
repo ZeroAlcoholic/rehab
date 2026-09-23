@@ -84,7 +84,7 @@ function metricCard(series) {
     el("p", { class: "muted" }, `${last.date}${last.time ? ` ${last.time}` : ""}`),
   );
   if (last.review)
-    card.append(el("p", { class: "flag" }, `待核對：${last.review}`));
+    card.append(el("p", { class: "flag" }, "此值不計入變化"));
   if (last.excluded) card.append(el("p",{class:"flag"},`不納入變化：${last.excluded}`));
   if (valid.length >= 2) {
     const delta = round(current.value - first.value);
@@ -107,7 +107,7 @@ function metricCard(series) {
       el(
         "p",
         { class: "flag" },
-        `${series.unverifiedPoints.length} 筆待核對值未納入變化計算`,
+        `${series.unverifiedPoints.length} 筆僅保留量測值`,
       ),
     );
   const history = el(
@@ -118,7 +118,7 @@ function metricCard(series) {
       el(
         "p",
         {},
-        `${p.date}${p.time ? ` ${p.time}` : ""}：${p.value} ${series.unit}${p.review ? ` · 待核對：${p.review}` : ""}${p.excluded ? ` · 排除：${p.excluded}` : ""}`,
+        `${p.date}${p.time ? ` ${p.time}` : ""}：${p.value} ${series.unit}${p.review ? " · 不計入變化" : ""}${p.excluded ? ` · 排除：${p.excluded}` : ""}`,
       ),
     ),
   );
@@ -169,7 +169,7 @@ function segmental(analysis) {
             {},
             metrics[key] == null
               ? "缺少數值"
-              : `${metrics[key]} kg${latest.data.review?.[key] ? " · 待核對" : ""}`,
+              : `${metrics[key]} kg${latest.data.review?.[key] ? " · 僅供瀏覽" : ""}`,
           ),
         ),
       );
@@ -233,6 +233,6 @@ export function renderBodyComposition(analysis) {
     segmental(analysis),
     other,
     reports,
-    el('details',{class:'body-method'},el('summary',{},'如何比較量測'),el('p',{class:'muted'},'依實際日期呈現，不補未量測的數值。待核對值保留原始紀錄，暫不納入變化計算；量測時段、水分與運動條件需一致才適合追蹤。')),
+    el('details',{class:'body-method'},el('summary',{},'如何比較量測'),el('p',{class:'muted'},'依實際日期呈現，不補未量測的數值。量測時段、水分與運動條件需一致才適合追蹤。')),
   ].filter(Boolean);
 }

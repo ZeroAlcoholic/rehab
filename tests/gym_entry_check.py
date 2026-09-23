@@ -84,7 +84,7 @@ try:
             assert page.locator('.set-reference').count() == 0
             page.get_by_role('combobox',name=name,exact=True).select_option(original)
             assert page.locator('.set-reference').count() == 2
-        page.get_by_text('紀錄詳情與統計設定', exact=True).click()
+        page.get_by_text('更多設定', exact=True).click()
         page.get_by_role('combobox',name='負荷記錄方式',exact=True).select_option('added_plates')
         assert page.locator('.set-reference').count() == 0
         page.get_by_role('combobox',name='負荷記錄方式',exact=True).select_option('')
@@ -106,7 +106,7 @@ try:
             assert page.locator('dialog').evaluate('n=>n.scrollWidth<=n.clientWidth')
         page.set_viewport_size({'width':412,'height':915})
         page.get_by_text('日期與器材設定',exact=True).click()
-        page.get_by_text('紀錄詳情與統計設定',exact=True).click()
+        page.get_by_text('更多設定',exact=True).click()
         page.locator('dialog').evaluate('n=>n.scrollTop=0')
         (ROOT/'artifacts').mkdir(exist_ok=True)
         page.screenshot(path=str(ROOT/'artifacts/gym-entry-mobile.png'))
