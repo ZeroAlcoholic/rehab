@@ -108,6 +108,19 @@ try:
         assert measured['note']=='量測 70 kg；型號待核對。'
         assert measured['measurementContext']=={'device':'測試機（型號待核對）','conditions':'早上；姿勢待核對。'}
         assert measured['metrics']['weight']==71
+        history_measurement=page.locator('#history .record').filter(has_text='InBody')
+        history_measurement.locator('.record-details > summary').click()
+        assert history_measurement.locator('.record-metrics dt').inner_text()=='體重'
+        assert history_measurement.locator('.record-metrics dd').inner_text()=='71 kg'
+        for width in [320,390,412,1100]:
+            page.set_viewport_size({'width':width,'height':915})
+            page.evaluate("document.documentElement.style.fontSize='200%'")
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            label=history_measurement.locator('dt').bounding_box()
+            value=history_measurement.locator('dd').bounding_box()
+            assert label['x']+label['width']<=value['x']+1 or label['y']+label['height']<=value['y']+1
+        page.evaluate("document.documentElement.style.fontSize='100%'")
+        page.set_viewport_size({'width':412,'height':915})
         page.locator('.body-report-notes > summary').click()
         assert '待核對' not in page.locator('.body-report-notes').inner_text()
         assert not errors,errors

@@ -48,5 +48,14 @@ for (const file of files) {
   if (layer === "ui" && /\b(?:indexedDB|fetch|localStorage)\b/.test(source))
     failures.push(`${relative}: direct storage/network access`);
 }
+// Every shipped module must be available after an offline reload.
+const worker = await readFile('sw.js', 'utf8');
+const manifest = worker.match(/const files = \[([\s\S]*?)\];/)?.[1];
+assert.ok(manifest, 'Service worker precache manifest is missing');
+const precached = new Set([...manifest.matchAll(/["']([^"']+)["']/g)].map(match => match[1]));
+for (const file of files) {
+  const url = './src/' + path.relative(root, file).split(path.sep).join('/');
+  if (!precached.has(url)) failures.push(`${url}: missing from offline precache`);
+}
 assert.deepEqual(failures, [], "Module boundaries violated");
 console.log(`Module boundaries verified: ${files.length} modules.`);

@@ -1,4 +1,5 @@
-import { qualityEditor, machineDisplayName, displayRecordText } from "./record-quality.js";
+import { qualityEditor } from "./record-quality.js";
+import { machineDisplayName, displayRecordText, recordTextValue } from "./record-text.js";
 import { EXERCISES } from "../domain/catalog.js";
 import { exerciseIllustration } from './exercise-illustration.js';
 import { weightBasisLabel } from './training-sets.js';
@@ -44,7 +45,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
     value: initial.machine ? machineDisplayName(initial.machine) : '',
     placeholder: "例如：A 館胸推 02",
   });
-  const machineValue = () => machine.value === (initial.machine ? machineDisplayName(initial.machine) : '') ? initial.machine : machine.value;
+  const machineValue = () => initial.machine ? recordTextValue(initial.machine, machine.value, machineDisplayName) : machine.value;
   const unit = select(
     [
       ["kg", "kg"],
@@ -261,7 +262,7 @@ export function openTraining({ data = null, reference = null, editing = false, r
         })),
         pain: pain.value,
         technique: technique.value,
-        note: note.value === displayRecordText(initial.note) ? initial.note : note.value,
+        note: recordTextValue(initial.note, note.value),
       }),
     );
   });

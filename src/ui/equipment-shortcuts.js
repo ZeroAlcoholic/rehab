@@ -3,7 +3,7 @@ import { BODY_REGIONS, MUSCLE_ROLES } from "../domain/muscles.js";
 import { el, field, select, button } from "./dom.js";
 import { exerciseIllustration } from './exercise-illustration.js';
 import { setStrip, weightBasisLabel } from './training-sets.js';
-import { machineDisplayName } from './record-quality.js';
+import { machineDisplayName } from './record-text.js';
 
 const PRIMARY_LIMIT = 6;
 

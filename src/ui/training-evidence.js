@@ -1,4 +1,4 @@
-import { machineDisplayName, displayRecordText } from './record-quality.js';
+import { machineDisplayName, displayRecordText } from './record-text.js';
 import { el } from "./dom.js";
 import { PROGRESS_LABELS } from "../domain/body-insights.js";
 import { EXERCISES } from "../domain/catalog.js";

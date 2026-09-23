@@ -1,4 +1,5 @@
-import { machineDisplayName, displayRecordText } from './record-quality.js';
+import { setStrip } from './training-sets.js';
+import { machineDisplayName, displayRecordText } from './record-text.js';
 import { EXERCISES, INBODY_FIELDS } from "../domain/catalog.js";
 import { el, button, formatDate } from "./dom.js";
 import {LOCATIONS,PLAN_STATUS,TRIGGERS,RED_FLAGS} from '../domain/rehab.js';
@@ -74,7 +75,7 @@ export function renderHistory(
   if (records.length) container.append(archive);
   for (const record of [...records].reverse()) {
     const summary = record.kind==='rehab' ? (record.data.type==='plan'?'訓練調整計畫':`身體狀況 · ${record.data.score===null?'未量化':`${record.data.score}/10`}`) : record.kind === 'training'
-      ? `${EXERCISES.find(e=>e.id===record.data.exerciseId)?.name ?? record.data.exerciseId} · ${record.data.sets.length} 組 · ${machineDisplayName(record.data.machine)}`
+      ? `${EXERCISES.find(e=>e.id===record.data.exerciseId)?.name ?? record.data.exerciseId} · ${record.data.sets.length} 組`
       : `InBody · ${record.data.metrics.weight == null ? '體重未填' : `${record.data.metrics.weight} kg`} · ${Object.values(record.data.metrics).filter(v=>v!=null).length} 項量測`;
     archive.append(
       el(
@@ -84,10 +85,14 @@ export function renderHistory(
           "div",
           {},
           el("time", {}, `${formatDate(record.data.date)}${record.data.time ? ` ${record.data.time}（台灣時間）` : ""}`),
-          el("p", {}, summary),
+          el("p", {class:'record-title'}, summary),
+          record.kind === 'training' ? el('p', {class:'record-machine muted'}, machineDisplayName(record.data.machine)) : null,
           el('details',{class:'record-details','data-record-id':record.recordId,open:expanded.has(record.recordId)},
           el('summary',{},'數值與備註'),
-          el("p", {}, describeRecord(record.kind, record.data)),
+          record.kind === 'training' ? setStrip(record.data) : record.kind === 'inbody'
+            ? el('dl', {class:'record-metrics'}, INBODY_FIELDS.filter(f=>record.data.metrics[f.id]!=null).map(f=>
+              el('div',{},el('dt',{},f.label),el('dd',{},`${record.data.metrics[f.id]} ${f.unit}`))))
+            : el("p", {}, describeRecord(record.kind, record.data)),
           record.data.analysisExcludedReason
             ? el(
                 "p",
@@ -95,8 +100,9 @@ export function renderHistory(
                 `不納入統計：${record.data.analysisExcludedReason}`,
               )
             : null,
-          record.data.note
-            ? el("p", { class: "muted" }, displayRecordText(record.data.note))
+          displayRecordText(record.data.note)
+            ? el('section', {class:'record-notes'}, el('strong',{},'備註'),
+                el("p", { class: "muted" }, displayRecordText(record.data.note)))
             : null,
           record.data.measurementContext ? el("p",{class:"muted"},[record.data.measurementContext.device,record.data.measurementContext.conditions].map(value=>displayRecordText(value)).filter(Boolean).join(" · ")) : null,
           ),

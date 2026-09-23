@@ -1,17 +1,5 @@
 import { el, field, select } from "./dom.js";
-// Presentation only; edited fields retain the original value when left unchanged.
-export function displayRecordText(text = '') {
-  const cleaned = text
-    .replace(/(?:既有)?(?:實際拉法|姿勢|姿式|型號|機型|機台|握法)?待(?:核對|確認)(?:仍保留)?/gu, '')
-    .replace(/[（(]\s*[）)]/gu, '')
-    .replace(/[，,、／/]\s*(?=[。；;\n]|$)/gu, '')
-    .replace(/[；;。]\s*。/gu, '。')
-    .trim();
-  return /^[\s，,。；;、／/]*$/u.test(cleaned) ? '' : cleaned;
-}
-export function machineDisplayName(machine = '') {
-  return displayRecordText(machine) || '未指定機台';
-}
+import { displayRecordText, recordTextValue } from './record-text.js';
 export function qualityEditor(kind, data = {}) {
   const excluded = el("input", {
     type: "checkbox",
@@ -40,7 +28,7 @@ export function qualityEditor(kind, data = {}) {
     maxlength: 2000,
     placeholder: "握法、座椅或動作條件",
   });
-  const postureValue = () => posture.value === displayRecordText(data.posture ?? '') ? (data.posture ?? '') : posture.value.trim();
+  const postureValue = () => recordTextValue(data.posture, posture.value.trim());
   const element = el(
     "details",
     { class: "record-quality-editor" },

@@ -1,4 +1,5 @@
-import { qualityEditor, displayRecordText } from "./record-quality.js";
+import { qualityEditor } from "./record-quality.js";
+import { displayRecordText, recordTextValue } from "./record-text.js";
 import { INBODY_FIELDS } from "../domain/catalog.js";
 import { el, field, modal, submit, localDate, numberInput } from "./dom.js";
 
@@ -58,14 +59,19 @@ export function openInbody({ data = null, editing = false, onSave }) {
         ...quality.value(),
         date: date.value,
         ...(time.value || data?.time !== undefined ? {time:time.value} : {}),
-        ...(device.value || conditions.value || data?.measurementContext !== undefined ? {measurementContext:{device:device.value === displayRecordText(data?.measurementContext?.device ?? '') ? (data?.measurementContext?.device ?? '') : device.value,conditions:conditions.value === displayRecordText(data?.measurementContext?.conditions ?? '') ? (data?.measurementContext?.conditions ?? '') : conditions.value}} : {}),
+        ...(device.value || conditions.value || data?.measurementContext !== undefined ? {
+          measurementContext: {
+            device: recordTextValue(data?.measurementContext?.device, device.value),
+            conditions: recordTextValue(data?.measurementContext?.conditions, conditions.value),
+          },
+        } : {}),
         metrics: Object.fromEntries(
           controls.map(({ field: f, input }) => [
             f.id,
             input.value === "" ? null : Number(input.value),
           ]),
         ),
-        note: note.value === displayRecordText(data?.note ?? '') ? (data?.note ?? '') : note.value,
+        note: recordTextValue(data?.note, note.value),
       }),
     );
   });

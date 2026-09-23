@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v33-clear-records";
+const VERSION = "rehab-shell-v34-record-presentation";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
@@ -52,6 +52,7 @@ const files = [
   "./src/ui/body-detail.js",
   "./src/ui/training-evidence.js",
   "./src/ui/record-quality.js",
+  "./src/ui/record-text.js",
   "./src/ui/body-composition.js",
   "./src/ui/body-controls.js",
   "./src/ui/body-regions.js",

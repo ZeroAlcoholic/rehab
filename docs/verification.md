@@ -248,3 +248,12 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 100 項 Node 測試、46 模組邊界及 training_efficiency、gym_entry、history_disclosure、longitudinal、public_update 通過。Chrome 手機尺寸模擬，不代表 Android 實機或真實 Google 帳戶驗證。
 
 正式站以私人備份展開歷史時，另發現計畫 review 狀態仍顯示待確認。v33 將該標籤改為草稿；狀態值及可操作行為保持不變。
+
+
+## 架構與手機明細收尾（v34）
+
+2026-09-23：將文字顯示及未修改欄位的原值回存規則集中到無 DOM 依賴的 record-text 模組；歷史、器材卡與分析顯示不再依賴表單元件。邊界檢查新增所有 src JavaScript 必須列入離線快取的規則，已驗證漏列模組會失敗，補列後通過。資料 schema、同步與進步判讀規則未改。
+
+歷史明細分開呈現器材名稱、組數卡片與分行備註；InBody 使用名稱／數值對照。沿用既有展開方式，不增加查看步驟。私人資料只在封鎖外網的本機環境做手機視覺檢查，截圖留在 private；320/390/412/1100px 及 200% 字體無橫向溢出。
+
+101 項 Node 測試、47 模組依賴與離線清單、history_disclosure、training_efficiency、visual_training、longitudinal、browser、public_update 通過，含原值保留、編輯／重整、備份、受控 Google 同步、離線更新及量測名稱數值不重疊。已完成獨立程式碼審查及手機尺寸截圖檢視；未以真實 Google 帳戶或 Android 實機驗證。

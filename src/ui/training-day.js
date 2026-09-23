@@ -1,4 +1,4 @@
-import { machineDisplayName, displayRecordText } from './record-quality.js';
+import { machineDisplayName, displayRecordText } from './record-text.js';
 import { trainingDay } from '../domain/training-day.js';
 import { el, button, field, select, localDate } from './dom.js';
 import { BODY_REGIONS } from '../domain/muscles.js';

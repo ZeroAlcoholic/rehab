@@ -35,6 +35,9 @@ try:
         assert not first.get_by_text('完整原始備註 19',exact=True).is_visible()
         first.locator('.record-details > summary').click()
         assert first.get_by_text('完整原始備註 19',exact=True).is_visible()
+        assert first.locator('.set-tile').get_attribute('aria-label')=='第 1 組，30 kg，12 次'
+        assert first.locator('.record-machine').inner_text()=='A'
+        assert first.locator('.record-notes').is_visible()
         first.get_by_role('button',name='修改',exact=True).click()
         page.get_by_text('感受與備註（選填）',exact=True).click()
         page.get_by_label('備註',exact=True).fill('修改後仍保留內容')

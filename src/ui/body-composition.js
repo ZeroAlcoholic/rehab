@@ -1,4 +1,4 @@
-import { displayRecordText } from './record-quality.js';
+import { displayRecordText } from './record-text.js';
 import { el } from "./dom.js";
 const CORE = [
   "weight",
