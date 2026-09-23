@@ -246,3 +246,5 @@ onboarding 實際瀏覽器測試先重現同步未帶入設定，再驗證專案
 2026-09-23：處理舊 machine、posture、note 與 InBody 來源／量測條件中的待核對、待確認文字。僅清理顯示；未編輯的欄位在保存時保留原值，姿勢比較仍採原始條件。新增文字清理測試保留重量、次數、座椅設定與疼痛描述；瀏覽器案例驗證訓練及 InBody 改數值後原始附註不被改寫，展開報告也不顯示殘留提示。
 
 100 項 Node 測試、46 模組邊界及 training_efficiency、gym_entry、history_disclosure、longitudinal、public_update 通過。Chrome 手機尺寸模擬，不代表 Android 實機或真實 Google 帳戶驗證。
+
+正式站以私人備份展開歷史時，另發現計畫 review 狀態仍顯示待確認。v33 將該標籤改為草稿；狀態值及可操作行為保持不變。

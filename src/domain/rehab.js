@@ -14,7 +14,7 @@ export const RED_FLAGS = Object.freeze([
   ['bilateral_legs','新出現雙腿麻木／無力'],['sudden_weakness','新出現突然或加劇的腿無力'],
   ['fever','發燒／畏寒或全身不適'],['chest_breathing','胸痛／呼吸困難'],
 ]);
-export const PLAN_STATUS = {review:'待確認',ready:'已確認',paused:'暫緩'};
+export const PLAN_STATUS = {review:'草稿',ready:'已確認',paused:'暫緩'};
 
 export function validateRehab(data, v) {
   const common=['type','date','time'];

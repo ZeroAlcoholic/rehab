@@ -1,4 +1,4 @@
-const VERSION = "rehab-shell-v32-remove-legacy-prompts";
+const VERSION = "rehab-shell-v33-clear-records";
 const scope = new URL(self.registration.scope).pathname;
 const cacheName = VERSION + ":" + scope;
 const files = [
